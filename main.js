@@ -5,7 +5,8 @@ function init() {
 
     var height_count = 3;
     var width_count = 3;
-
+    // at the start of the game neither block is selected
+    var selected_block = null;
     // get canvas context
     var main_screen = new createjs.Stage("screen");
 
@@ -34,6 +35,28 @@ function init() {
                 h_pos, cellule_width, cellule_height, 10, 10, 10, 10);
 
             main_screen.addChild(cellule);
+            // save position data
+            cellule.w_pos = j;
+            cellule.h_pos = i;
+
+            cellule.on('click', function(event) {
+                if (selected_block) {
+                    var shift_w = this.w_pos - selected_block.w_pos;
+                    var shift_h = this.h_pos - selected_block.h_pos;
+
+                    var w = shift_w * separator_w + shift_w * cellule_width;
+                    var h = shift_h * separator_h + shift_h * cellule_height;
+
+                    createjs.Tween.get(selected_block, {loop: false}).to({x: w, y: h}, 500);
+                    var block_copy = selected_block;
+                    // unselected block
+                    selected_block.dispatchEvent('click');
+
+                    // upd block position
+                    block_copy.w_pos = this.w_pos;
+                    block_copy.h_pos = this.h_pos;
+                }
+            });
         }
     }
 
@@ -45,23 +68,32 @@ function init() {
     main_block.graphics.beginFill("#fff").drawRoundRectComplex(w_pos_block,
         h_pos_block, cellule_width, cellule_height, 10, 10, 10, 10);
     // check if exists default method to get x,y position!!
-    main_block.w_pos = w_pos_block;
-    main_block.h_pos = h_pos_block;
+    main_block.w_pos = 2;
+    main_block.h_pos = 2;
 
     main_screen.addChild(main_block);
 
     main_block.on('click', function(event) {
+        selected_block = !this.graphics._stroke ? this: null;
         // if block not selected
         if (!this.graphics._stroke) {
             this.graphics.clear().setStrokeStyle(5).beginStroke("#000");
         } else {
             this.graphics.clear();
         }
+        // calculate block position in pixels
+        var w_pos_block = separator_w + separator_w * this.w_pos + cellule_width * this.w_pos;
+        var h_pos_block = separator_h + separator_h * this.h_pos + cellule_height * this.h_pos;
 
-        this.graphics.beginFill("#fff").drawRoundRectComplex(this.w_pos,
-            this.h_pos, cellule_width, cellule_height, 10, 10, 10, 10);
+        this.graphics.beginFill("#fff").drawRoundRectComplex(w_pos_block,
+            h_pos_block, cellule_width, cellule_height, 10, 10, 10, 10);
+        this.x = 0; this.y = 0;
         main_screen.update();
     });
-
     main_screen.update();
+
+    // settings for animation
+    createjs.Ticker.addEventListener('tick', main_screen);
+    createjs.Ticker.setFPS(60);
+
 }
