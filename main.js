@@ -7,6 +7,9 @@ function init() {
     var width_count = 3;
     // at the start of the game neither block is selected
     var selected_block = null;
+    // disable selecting any block during animation
+    // by default neither block selected
+    var disable_select = false;
     // get canvas context
     var main_screen = new createjs.Stage("screen");
 
@@ -44,10 +47,25 @@ function init() {
                     var shift_w = this.w_pos - selected_block.w_pos;
                     var shift_h = this.h_pos - selected_block.h_pos;
 
+                    // check if block can be moved
+                    if (!is_moved_block(shift_w, shift_h)) {
+                        // shake effect
+                        createjs.Tween.get(selected_block, {loop: false})
+                            .to({x: -5, y: 0}, 100)
+                            .to({x: 5, y: 0}, 100)
+                            .to({x: -5, y: 0}, 100)
+                            .to({x: 0, y: 0}, 100);
+                        return;
+                    }
+
                     var w = shift_w * separator_w + shift_w * cellule_width;
                     var h = shift_h * separator_h + shift_h * cellule_height;
-
-                    createjs.Tween.get(selected_block, {loop: false}).to({x: w, y: h}, 500);
+                    // disable block selection during animation
+                    disable_select = true;
+                    // start move animation and handle when it ended
+                    createjs.Tween.get(selected_block, {loop: false}).to({x: w, y: h}, 300).call(function() {
+                        disable_select = false;
+                    });
                     var block_copy = selected_block;
                     // unselected block
                     selected_block.dispatchEvent('click');
@@ -67,6 +85,8 @@ function init() {
 
     main_block.graphics.beginFill("#fff").drawRoundRectComplex(w_pos_block,
         h_pos_block, cellule_width, cellule_height, 10, 10, 10, 10);
+    // glow effect
+    main_block.shadow = new createjs.Shadow("#fff", 0, 0, cellule_width);
     // check if exists default method to get x,y position!!
     main_block.w_pos = 2;
     main_block.h_pos = 2;
@@ -77,6 +97,7 @@ function init() {
         selected_block = !this.graphics._stroke ? this: null;
         // if block not selected
         if (!this.graphics._stroke) {
+            if (disable_select) return;
             this.graphics.clear().setStrokeStyle(5).beginStroke("#000");
         } else {
             this.graphics.clear();
@@ -95,5 +116,12 @@ function init() {
     // settings for animation
     createjs.Ticker.addEventListener('tick', main_screen);
     createjs.Ticker.setFPS(60);
+}
 
+function is_moved_block(shift_w, shift_h) {
+    if (!(shift_h == 0 || shift_w == 0)) return false;
+    if (!(shift_h >= -1 && shift_h <= 1)) return false;
+    if (!(shift_w >= -1 && shift_w <= 1)) return false;
+
+    return true;
 }
