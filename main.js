@@ -7,9 +7,9 @@ function init() {
     var width_count = 3;
     // blocks on level
     var blocks = [{w: 2, h: 2, color: "#fff", main: true},
+        {w: 0, h: 0, color: "#FFFF00", main: false},
         {w: 1, h: 1, color: "#FFFF00", main: false},
-        {w: 1, h: 2, color: "#FFFF00", main: false},
-        {w: 1, h: 0, color: "#FFFF00", main: false}];
+        {w: 2, h: 0, color: "#FFFF00", main: false}];
 
     // at the start of the game neither block is selected
     var selected_block = null;
@@ -70,8 +70,21 @@ function init() {
                     disable_select = true;
                     // start move animation and handle when it ended
                     createjs.Tween.get(selected_block, {loop: false}).to({x: w, y: h}, 300).call(function() {
+                        var count_successively = 3
+                        var w_candidates = search_remove_blocks('w_pos', block_copy, count_successively);
+                        if (w_candidates.length == count_successively) {
+                            // TODO: remove animation
+                            main_screen.removeChild.apply(main_screen, w_candidates);
+                        } else {
+                            var h_candidates = search_remove_blocks('h_pos', block_copy, count_successively);
+                            console.log(h_candidates);
+                            if (h_candidates.length == count_successively) {
+                                // TODO: remove animation
+                                main_screen.removeChild.apply(main_screen, h_candidates);
+                            }
+                        }
+
                         disable_select = false;
-                        // TODO: check if exists blocks that can be removed
                     });
                     var block_copy = selected_block;
                     // unselected block
@@ -135,23 +148,26 @@ function init() {
     // settings for animation
     createjs.Ticker.addEventListener('tick', main_screen);
     createjs.Ticker.setFPS(60);
-    // note:every block has shadow
-    var candidates_w = main_screen.children.filter(function(elem){
-        return elem.shadow && elem.w_pos == 1 && elem.shadow.color == '#FFFF00';
-    }).sort(function(a, b) {return a.h_pos - b.h_pos}).reduce(function(prev, current, index, arr) {
-        if (prev.length == 3) return prev;
-        if (prev.length == 0) {
-            prev.push(current); return prev;
-        } else {
-            if (prev[prev.length - 1].h_pos + 1 == current.h_pos) {
+
+    function search_remove_blocks(pos, block, count_successively) {
+        // pos must be: w_pos or h_pos
+        return main_screen.children.filter(function(elem){
+            // note:every block has shadow
+            return elem.shadow && elem[pos] == block[pos] && elem.shadow.color == block.shadow.color;
+        }).sort(function(a, b) {return a[pos] - b[pos]}).reduce(function(prev, current) {
+            if (prev.length == count_successively) return prev;
+            if (prev.length == 0) {
                 prev.push(current); return prev;
             } else {
-                return [];
+                var reverse_pos = pos == 'h_pos' ? 'w_pos': 'h_pos';
+                if (prev[prev.length - 1][reverse_pos] + 1 == current[reverse_pos]) {
+                    prev.push(current); return prev;
+                } else {
+                    return [];
+                }
             }
-        }
-    }, []);
-    //main_screen.removeChild.apply(main_screen, candidates_w);
-    console.log(candidates_w);
+        }, []);
+    }
 }
 
 function is_moved_block(shift_w, shift_h) {
