@@ -77,7 +77,6 @@ function init() {
                             main_screen.removeChild.apply(main_screen, w_candidates);
                         } else {
                             var h_candidates = search_remove_blocks('h_pos', block_copy, count_successively);
-                            console.log(h_candidates);
                             if (h_candidates.length == count_successively) {
                                 // TODO: remove animation
                                 main_screen.removeChild.apply(main_screen, h_candidates);
@@ -151,15 +150,16 @@ function init() {
 
     function search_remove_blocks(pos, block, count_successively) {
         // pos must be: w_pos or h_pos
+        var reverse_pos = pos == 'h_pos' ? 'w_pos': 'h_pos';
+
         return main_screen.children.filter(function(elem){
             // note:every block has shadow
             return elem.shadow && elem[pos] == block[pos] && elem.shadow.color == block.shadow.color;
-        }).sort(function(a, b) {return a[pos] - b[pos]}).reduce(function(prev, current) {
+        }).sort(function(a, b) {return a[reverse_pos] - b[reverse_pos]}).reduce(function(prev, current) {
             if (prev.length == count_successively) return prev;
             if (prev.length == 0) {
                 prev.push(current); return prev;
             } else {
-                var reverse_pos = pos == 'h_pos' ? 'w_pos': 'h_pos';
                 if (prev[prev.length - 1][reverse_pos] + 1 == current[reverse_pos]) {
                     prev.push(current); return prev;
                 } else {
