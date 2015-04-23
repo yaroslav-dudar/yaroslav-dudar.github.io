@@ -1,5 +1,5 @@
 function init() {
-
+    // offset work differently in chrome and firefox!!
     var field_width = document.getElementById('screen').offsetWidth;
     var field_height = document.getElementById('screen').offsetHeight;
 
@@ -79,13 +79,20 @@ function init() {
                         var positions = ['h_pos', 'w_pos'];
                         for (var i = 0; i < positions.length; i++) {
                             var candidates = search_remove_blocks(positions[i], block_copy, count_successively);
-                            if (candidates.length == count_successively) {
+                            if (candidates) {
                                 var is_game_lose = candidates.filter(function(block) {return block.is_main;}).length > 0;
-                                // TODO: remove animation
-                                main_screen.removeChild.apply(main_screen, candidates);
+                                // reduction animation
+                                for (var i = 0; i < candidates.length; i++) {
+                                    // calculate center of the cellule
+                                    var cellule_center = calculate_center_of_cellule(candidates[i]);
+                                    createjs.Tween.get(candidates[i], {loop: false}).to(
+                                        {scaleX: 0, scaleY: 0, x: cellule_center.w, y: cellule_center.h}, 400).call(function() {
+                                            main_screen.removeChild(candidates[i]);
+                                        });
+                                }
+                                //main_screen.removeChild.apply(main_screen, candidates);
                                 if (is_game_lose) {
-                                    console.log('You lose. Main block destroied');
-                                    show_restart_screen();
+                                    show_menu_screen('lose');
                                 }
                                 break;
                             }
@@ -94,8 +101,7 @@ function init() {
                         // check destination cellule
                         if (block_copy.is_main && destination_cellule.w == block_copy.w_pos
                             && destination_cellule.h == block_copy.h_pos && !is_game_lose) {
-                            // TODO: level complete
-                            console.log('You win!');
+                            show_menu_screen('win');
                         }
                         disable_select = false;
                     });
@@ -121,7 +127,7 @@ function init() {
         // pos must be: w_pos or h_pos
         var reverse_pos = pos == 'h_pos' ? 'w_pos': 'h_pos';
 
-        return main_screen.children.filter(function(elem){
+        var candidates = main_screen.children.filter(function(elem){
             // note:every block has is_main property
             return 'is_main' in elem && elem[pos] == block[pos] && elem.shadow.color == block.shadow.color;
         }).sort(function(a, b) {return a[reverse_pos] - b[reverse_pos]}).reduce(function(prev, current) {
@@ -136,6 +142,11 @@ function init() {
                 }
             }
         }, []);
+
+        if (candidates.length == count_successively) {
+            return candidates;
+        }
+        // else return undefined
     }
 
     function remove_all_blocks() {
@@ -193,7 +204,8 @@ function init() {
         }
     }
 
-    function show_restart_screen() {
+    function show_menu_screen(screen_type) {
+        // screen_type: lose, win
         // blocking main screen
         var block_screen = new createjs.Shape();
         block_screen.graphics.beginFill("#fff").drawRoundRectComplex(0,
@@ -208,14 +220,31 @@ function init() {
         var btn = document.createElement('button');
         btn.setAttribute('id', 'btn');
         btn.innerHTML = 'Restart';
-        document.getElementById('container').appendChild(btn);
+        var screen_elem = document.getElementById('screen');
+        screen_elem.parentNode.insertBefore(btn, screen_elem.nextSibling);
+        // render message on the scrren
+        var text = screen_type == 'lose' ? 'Game over :(' : 'Level complete!';
+        var message = new createjs.Text(text,
+            "bold 20px Brush Script MT, cursive, Arial", "#303030");
+        message.x = document.getElementById('screen').offsetWidth / 2 - 60;
+        message.y = document.getElementById('screen').offsetHeight / 2 - 10;
+        main_screen.addChild(message);
+        // TODO: next level if win
 
         btn.addEventListener('click', function() {
             remove_all_blocks();
-            main_screen.removeChild(block_screen);
+            main_screen.removeChild(block_screen, message);
             render_blocks_for_current_level();
             document.getElementById('container').removeChild(this);
         });
+    }
+
+    function calculate_center_of_cellule(block) {
+        var w_pos = separator_w + separator_w *
+            block.w_pos + cellule_width * block.w_pos + cellule_width / 2;
+        var h_pos = separator_h + separator_h *
+            block.h_pos + cellule_height * block.h_pos + cellule_height / 2;
+        return {w: w_pos, h: h_pos};
     }
 }
 

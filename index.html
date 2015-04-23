@@ -9,7 +9,16 @@
     <style>
         #container {
             margin: auto;
-            width: 210px;
+            width: 300px;
+        }
+
+        .text {
+            font-family: Brush Script MT, cursive, Arial;
+            font-size: 18px;
+            font-style: normal;
+            font-variant: normal;
+            font-weight: 500;
+            line-height: 19px;
         }
 
         #btn {
@@ -49,7 +58,8 @@
 </head>
 <body onload='init()'>
     <div id='container'>
-        <canvas id="screen" width='210' height='210'></canvas>
+        <canvas id="screen" width='300' height='300'></canvas>
+        <p class='text'> How to play: Select tiles and move them (up, down, left, right). When main tile moved to the destination cellue you will win</p>
     </div>
 </body>
 </html>
