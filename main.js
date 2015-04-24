@@ -121,6 +121,9 @@ function init() {
     // settings for animation
     createjs.Ticker.addEventListener('tick', main_screen);
     createjs.Ticker.setFPS(60);
+    // check blocks before rendering level
+    remove_blocks_in_column_or_row(3);
+
     main_screen.update();
 
     function search_remove_blocks(pos, block, count_successively) {
@@ -245,6 +248,43 @@ function init() {
         var h_pos = separator_h + separator_h *
             block.h_pos + cellule_height * block.h_pos + cellule_height / 2;
         return {w: w_pos, h: h_pos};
+    }
+
+    function remove_blocks_in_column_or_row(count_successively) {
+        // run before start each level
+        function search_del_candidates(candidates) {
+            var del_candidates = [];
+            for (pos = candidates.length - 1; pos >= 0; pos--) {
+                if (del_candidates.length == 0) {
+                    del_candidates.push(candidates[pos]);
+                } else if (del_candidates.length != 0
+                    && del_candidates[0].shadow.color == candidates[pos].shadow.color) {
+
+                    del_candidates.push(candidates[pos]);
+                } else {
+                    del_candidates = [candidates[pos]];
+                }
+                if (del_candidates.length == count_successively) {
+                    main_screen.removeChild.apply(main_screen, del_candidates);
+                    candidates.splice(del_candidates[0], del_candidates.length);
+                    del_candidates = [];
+                }
+            }
+        };
+
+        for (var i = 0; i < height_count; i++) {
+            var candidates = main_screen.children.filter(function(elem){
+                return 'is_main' in elem && elem.w_pos == i;
+            }).sort(function(a, b) {return a.h_pos - b.h_pos});
+            search_del_candidates(candidates);
+        }
+
+        for (var i = 0; i < width_count; i++) {
+            var candidates = main_screen.children.filter(function(elem){
+                return 'is_main' in elem && elem.h_pos == i;
+            }).sort(function(a, b) {return a.w_pos - b.w_pos});
+            search_del_candidates(candidates);
+        }
     }
 }
 
