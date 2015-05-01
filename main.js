@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function(event) {
-    var settings = {
+    var settings = [{
         width_count: 3, height_count: 3,
         destination_w: 0, destination_h: 1,
         count_successively: 3,
@@ -10,7 +10,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             {w: 2, h: 2, color: "#fff", is_main: false}
         ]
 
-    };
+    }, {
+        width_count: 5, height_count: 5,
+        destination_w: 0, destination_h: 4,
+        count_successively: 3,
+        blocks: [
+            {w: 2, h: 0, color: "#006600", is_main: true},
+        ]
+    }];
     var field_width = document.getElementById('screen').offsetWidth;
     var field_height = document.getElementById('screen').offsetHeight;
 

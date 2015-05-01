@@ -1,6 +1,7 @@
 function MainScene(level_settings, field_width, field_height) {
     
     this.settings = level_settings;
+    this.current_lvl = 1;
     // at the start of the game neither block is selected
     this.selected_block = null;
     /* disable selecting any block during animation
@@ -10,25 +11,37 @@ function MainScene(level_settings, field_width, field_height) {
     // field size
     this.field_width = field_width;
     this.field_height = field_height;
-    // distance between cells
-    this.separator_h = field_height * 0.03; // 3%
-    this.separator_w = field_width * 0.03; // 3%
 
-    this.cellule_width = (field_width - this.separator_w * (
-        this.settings.width_count + 1)) / this.settings.width_count;
+    this.get_lvl_settings = function() {
+        return this.settings[this.current_lvl - 1];
+    }
 
-    this.cellule_height = (field_height - this.separator_h * (
-        this.settings.height_count + 1)) / this.settings.height_count;
+    this.is_last_lvl = function() {
+        return this.settings.length == this.current_lvl;
+    }
 
-    this.search_remove_candidates = function(axis, index) {
+    this.update_scene_data = function() {
+        // distance between cells
+        this.separator_h = field_height * 0.03; // 3%
+        this.separator_w = field_width * 0.03; // 3%
+
+        this.cellule_width = (field_width - this.separator_w * (
+            this.get_lvl_settings().width_count + 1)) / this.get_lvl_settings().width_count;
+
+        this.cellule_height = (field_height - this.separator_h * (
+            this.get_lvl_settings().height_count + 1)) / this.get_lvl_settings().height_count;
+    }
+    // initial call
+    this.update_scene_data();
+
+    this.search_remove_candidates = function(axis, index, client) {
         // axis must be: w or h
         var reverse_axis = axis == 'h' ? 'w': 'h';
         var remove_list = [];
         var self = this;
-        this.children.filter(function(elem){
-            // note:every block has is_main property
-            return 'is_main' in elem && elem[axis] == index;
-        }).sort(function(a, b) {return a[reverse_axis] - b[reverse_axis]}).reduce(function(prev, current) {
+        client.get_blocks_from(axis, index)
+            .sort(function(a, b) {return a[reverse_axis] - b[reverse_axis]})
+            .reduce(function(prev, current) {
             if (prev.length == 0) {
                 prev.push(current);
             } else {
@@ -40,7 +53,7 @@ function MainScene(level_settings, field_width, field_height) {
                     prev = [current];
                 }
             }
-            if (prev.length == self.settings.count_successively) {
+            if (prev.length == self.get_lvl_settings().count_successively) {
                 remove_list.push(prev);
                 prev = [];
             }
@@ -81,9 +94,16 @@ function Block(w, h, color, is_main) {
 function CreateJSClient(scene) {
     this.scene = scene;
 
+    this.get_blocks_from = function(axis, index) {
+        return this.scene.children.filter(function(elem){
+            // note:every block has is_main property
+            return 'is_main' in elem && elem[axis] == index;
+        })
+    }
+
     this.render_lvl_blocks = function(Block) {
-        for (var index = 0; index < this.scene.settings.blocks.length; index++) {
-            var block_data = this.scene.settings.blocks[index];
+        for (var index = 0; index < this.scene.get_lvl_settings().blocks.length; index++) {
+            var block_data = this.scene.get_lvl_settings().blocks[index];
 
             var w_pos = this.scene.separator_w + this.scene.separator_w *
                 block_data.w + this.scene.cellule_width * block_data.w;
@@ -137,10 +157,10 @@ function CreateJSClient(scene) {
 
     this.render_game_field = function(Cellule, standart_collor, destination_collor) {
         // render game field
-        for (var h = 0; h < this.scene.settings.height_count; h++) {
-            for (var w = 0; w < this.scene.settings.width_count; w++) {
-                var cellule_color = (this.scene.settings.destination_h == h) && (
-                    this.scene.settings.destination_w == w) ? standart_collor: destination_collor;
+        for (var h = 0; h < this.scene.get_lvl_settings().height_count; h++) {
+            for (var w = 0; w < this.scene.get_lvl_settings().width_count; w++) {
+                var cellule_color = (this.scene.get_lvl_settings().destination_h == h) && (
+                    this.scene.get_lvl_settings().destination_w == w) ? standart_collor: destination_collor;
 
                 var cellule = new Cellule(w, h, cellule_color);
                 cellule.__proto__ = new createjs.Shape();
@@ -173,7 +193,7 @@ function CreateJSClient(scene) {
         // create button dynamicly
         var btn = document.createElement('button');
         btn.setAttribute('id', 'btn');
-        btn.innerHTML = 'Restart';
+        btn.innerHTML = screen_type == 'lose' || this.scene.is_last_lvl() ? 'Restart': 'Next Level';
         var screen_elem = document.getElementById('screen');
         screen_elem.parentNode.insertBefore(btn, screen_elem.nextSibling);
         // render message on the scrren
@@ -189,6 +209,19 @@ function CreateJSClient(scene) {
         btn.addEventListener('click', function() {
             self.remove_all_blocks();
             self.scene.removeChild(block_screen, message);
+            if (screen_type == 'win' && !self.scene.is_last_lvl()) {
+                // switch lvl
+                self.scene.current_lvl += 1;
+                self.scene.removeAllChildren();
+                self.scene.update_scene_data();
+
+                var background = new createjs.Shape();
+
+                background.graphics.beginFill("#ddd").drawRoundRectComplex(0,
+                    0, self.scene.field_width, self.scene.field_height, 10, 10, 10, 10);
+                self.scene.addChild(background);
+                self.render_game_field(Cellule, '#606060', '#aaa');
+            }
             self.render_lvl_blocks(Block);
             document.getElementById('container').removeChild(this);
         });
@@ -221,7 +254,7 @@ function CreateJSClient(scene) {
                     var axis = ['h', 'w'];
                     for (var i = 0; i < axis.length; i++) {
                         
-                        var del_list = self.scene.search_remove_candidates(axis[i], block_copy[axis[i]]);
+                        var del_list = self.scene.search_remove_candidates(axis[i], block_copy[axis[i]], self);
                         
                         if (del_list.length > 0) {
                             var is_game_lose = del_list.some(function(candidates) {
@@ -249,8 +282,8 @@ function CreateJSClient(scene) {
                     }
 
                     // check destination cellule
-                    if (block_copy.is_main && self.scene.settings.destination_w == block_copy.w
-                        && self.scene.settings.destination_h == block_copy.h && !is_game_lose) {
+                    if (block_copy.is_main && self.scene.get_lvl_settings().destination_w == block_copy.w
+                        && self.scene.get_lvl_settings().destination_h == block_copy.h && !is_game_lose) {
                         self.show_menu_screen('win');
                     }
                     self.scene.disable_select = false;
@@ -277,8 +310,8 @@ function CreateJSClient(scene) {
     this.pre_start_check = function() {
         // call this method before scene update
         // axis:w
-        for(var w = 0; w < this.scene.settings.width_count; w++) {
-            var del_list = this.scene.search_remove_candidates('w', w);
+        for(var w = 0; w < this.scene.get_lvl_settings().width_count; w++) {
+            var del_list = this.scene.search_remove_candidates('w', w, this);
             if (del_list.length > 0) {
                 var is_game_lose = del_list.some(function(candidates) {
                     return candidates.some(function(elem) {
@@ -298,8 +331,8 @@ function CreateJSClient(scene) {
             }
         }
         // axis:h
-        for(var h = 0; h < this.scene.settings.height_count; h++) {
-            var del_list = this.scene.search_remove_candidates('h', h);
+        for(var h = 0; h < this.scene.get_lvl_settings().height_count; h++) {
+            var del_list = this.scene.search_remove_candidates('h', h, this);
             if (del_list.length > 0) {
                 var is_game_lose = del_list.some(function(candidates) {
                     return candidates.some(function(elem) {
