@@ -20,20 +20,21 @@ function MainScene(level_settings, field_width, field_height) {
     this.cellule_height = (field_height - this.separator_h * (
         this.settings.height_count + 1)) / this.settings.height_count;
 
-    this.search_remove_candidates = function(axis, block) {
+    this.search_remove_candidates = function(axis, index) {
         // axis must be: w or h
         var reverse_axis = axis == 'h' ? 'w': 'h';
         var remove_list = [];
         var self = this;
-
         this.children.filter(function(elem){
             // note:every block has is_main property
-            return 'is_main' in elem && elem[axis] == block[axis] && elem.color == block.color;
+            return 'is_main' in elem && elem[axis] == index;
         }).sort(function(a, b) {return a[reverse_axis] - b[reverse_axis]}).reduce(function(prev, current) {
             if (prev.length == 0) {
                 prev.push(current);
             } else {
-                if (prev[prev.length - 1][reverse_axis] + 1 == current[reverse_axis]) {
+                if (prev[prev.length - 1][reverse_axis] + 1 == current[reverse_axis] &&
+                    prev[prev.length - 1].color == current.color) {
+
                     prev.push(current);
                 } else {
                     prev = [current];
@@ -100,6 +101,7 @@ function CreateJSClient(scene) {
             block.shadow = new createjs.Shadow(block_data.color, 0, 0, this.scene.cellule_width / 10);
             this.scene.addChild(block);
         }
+        this.pre_start_check();
     };
 
     this.handle_click_on_block = function(block) {
@@ -177,7 +179,7 @@ function CreateJSClient(scene) {
         // render message on the scrren
         var text = screen_type == 'lose' ? 'Game over :(' : 'Level complete!';
         var message = new createjs.Text(text,
-            "bold 20px Brush Script MT, cursive, Arial", "#303030");
+            "bold 20px Ubuntu Mono, cursive, Arial", "#303030");
         message.x = document.getElementById('screen').offsetWidth / 2 - 60;
         message.y = document.getElementById('screen').offsetHeight / 2 - 10;
 
@@ -185,9 +187,9 @@ function CreateJSClient(scene) {
         this.scene.addChild(message);
         // TODO: next level if win
         btn.addEventListener('click', function() {
-            //remove_all_blocks();
+            self.remove_all_blocks();
             self.scene.removeChild(block_screen, message);
-            //render_blocks_for_current_level();
+            self.render_lvl_blocks(Block);
             document.getElementById('container').removeChild(this);
         });
     };
@@ -219,7 +221,7 @@ function CreateJSClient(scene) {
                     var axis = ['h', 'w'];
                     for (var i = 0; i < axis.length; i++) {
                         
-                        var del_list = self.scene.search_remove_candidates(axis[i], block_copy);
+                        var del_list = self.scene.search_remove_candidates(axis[i], block_copy[axis[i]]);
                         
                         if (del_list.length > 0) {
                             var is_game_lose = del_list.some(function(candidates) {
@@ -263,6 +265,60 @@ function CreateJSClient(scene) {
             }
         });
     };
+
+    this.remove_all_blocks = function() {
+        var all_blocks = this.scene.children.filter(function(elem){
+            // note:every block has is_main property
+            return 'is_main' in elem
+        });
+        this.scene.removeChild.apply(this.scene, all_blocks);
+    }
+
+    this.pre_start_check = function() {
+        // call this method before scene update
+        // axis:w
+        for(var w = 0; w < this.scene.settings.width_count; w++) {
+            var del_list = this.scene.search_remove_candidates('w', w);
+            if (del_list.length > 0) {
+                var is_game_lose = del_list.some(function(candidates) {
+                    return candidates.some(function(elem) {
+                        return elem.is_main;
+                    });
+                });
+
+                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
+                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
+                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
+                    }
+                }
+
+                if (is_game_lose) {
+                    this.show_menu_screen('lose');
+                }
+            }
+        }
+        // axis:h
+        for(var h = 0; h < this.scene.settings.height_count; h++) {
+            var del_list = this.scene.search_remove_candidates('h', h);
+            if (del_list.length > 0) {
+                var is_game_lose = del_list.some(function(candidates) {
+                    return candidates.some(function(elem) {
+                        return elem.is_main;
+                    });
+                });
+
+                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
+                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
+                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
+                    }
+                }
+
+                if (is_game_lose) {
+                    this.show_menu_screen('lose');
+                }
+            }
+        }
+    }
 }
 
 function is_block_can_moved(shift_w, shift_h) {

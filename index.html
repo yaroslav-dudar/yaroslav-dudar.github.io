@@ -4,8 +4,8 @@
     <meta charset='utf-8'>
     <title>Pastime</title>
     <script src="https://code.createjs.com/createjs-2014.12.12.min.js"></script>
+    <script src="scene.js"></script>
     <script src="main.js"></script>
-
     <style>
         #container {
             margin: auto;
@@ -13,7 +13,7 @@
         }
 
         .text {
-            font-family: Brush Script MT, cursive, Arial;
+            font-family: Ubuntu Mono, cursive, Arial;
             font-size: 18px;
             font-style: normal;
             font-variant: normal;
@@ -56,10 +56,11 @@
     </style>
 
 </head>
-<body onload='init()'>
+<body>
     <div id='container'>
         <canvas id="screen" width='300' height='300'></canvas>
-        <p class='text'> How to play: Select tiles and move them (up, down, left, right). When main tile moved to the destination cellue you will win</p>
+        <p class='text'> How to play: Select tiles and move them (up, down, left, right).
+            When main tile will be at the destination cellue you will win.</p>
     </div>
 </body>
 </html>
