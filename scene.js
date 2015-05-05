@@ -213,7 +213,7 @@ function CreateJSClient(scene) {
 
         createjs.Tween.get(block_screen).to({alpha: 0.7}, 500);
 
-        // create button dynamicly
+        // create button
         var btn = document.createElement('button');
         btn.setAttribute('id', 'btn');
         btn.innerHTML = screen_type == 'lose' || this.scene.is_last_lvl() ? 'Restart': 'Next Level';
@@ -228,7 +228,7 @@ function CreateJSClient(scene) {
 
         var self = this;
         this.scene.addChild(message);
-        // TODO: next level if win
+
         btn.addEventListener('click', function() {
             self.remove_all_blocks();
             self.scene.removeChild(block_screen, message);
@@ -288,12 +288,13 @@ function CreateJSClient(scene) {
                             // reduction animation
                             for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
                                 // calculate center of the cellule
-                                for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
-                                    var cellule_center = self.scene.calculate_center_of_cellule(del_list[l_i][e_i]);
-                                    createjs.Tween.get(del_list[l_i][e_i]).to(
+                                var list = del_list[l_i];
+                                for(var e_i = 0; e_i < list.length; e_i++) {
+                                    var cellule_center = self.scene.calculate_center_of_cellule(list[e_i]);
+                                    createjs.Tween.get(list[e_i]).to(
                                     {scaleX: 0, scaleY: 0, x: cellule_center.w, y: cellule_center.h},
                                     400).call(function() {
-                                        self.scene.removeChild.apply(self.scene, del_list[l_i]);
+                                        self.scene.removeChild.apply(self.scene, list);
                                     });
                                 }
                             }
