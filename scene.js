@@ -79,9 +79,10 @@ function Cellule(w, h, color) {
 }
 
 
-function Block(w, h, color, is_main) {
+function Block(w, h, color, is_main, star_color) {
     this.w = w; this.h = h;
     this.color = color; this.is_main = is_main;
+    this.star_color = star_color;
 
     this.calculate_block_center = function(sep_w, sep_h, block_h, block_w) {
         var w_pos = sep_w + sep_w * this.w + block_w * this.w + block_w / 2;
@@ -111,15 +112,31 @@ function CreateJSClient(scene) {
                 block_data.h + this.scene.cellule_height * block_data.h;
 
             var block = new Block(block_data.w,
-                block_data.h, block_data.color, block_data.is_main);
+                block_data.h, block_data.color, block_data.is_main, block_data.star_color);
 
-            block.__proto__ = new createjs.Shape();
-            // add event listener for block
+            if (block_data.is_main) {
+                block.__proto__ = new createjs.Container();
+                var star = new createjs.Shape();
+                star.graphics.beginFill(block_data.star_color).drawPolyStar(
+                    w_pos + this.scene.cellule_width / 2,
+                    h_pos + this.scene.cellule_height / 2, this.scene.cellule_height / 4, 5, 0.6, -90);
+
+                var tile = new createjs.Shape();
+                tile.graphics.beginFill(block.color).drawRoundRectComplex(w_pos,
+                    h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
+                block.addChild(tile, star);
+                // hack!
+                block.graphics = tile.graphics;
+                block.star_graphics = star.graphics;
+            } else {
+                block.__proto__ = new createjs.Shape();
+                // add event listener for block
+                block.graphics.beginFill(block.color).drawRoundRectComplex(w_pos,
+                    h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
+            }
             this.handle_click_on_block(block);
-            block.graphics.beginFill(block.color).drawRoundRectComplex(w_pos,
-                h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
             block.shadow = new createjs.Shadow(block_data.color, 0, 0, this.scene.cellule_width / 10);
-            this.scene.addChild(block);
+                this.scene.addChild(block);
         }
         this.pre_start_check();
     };
@@ -150,6 +167,12 @@ function CreateJSClient(scene) {
             // shadow color the same as shape color
             this.graphics.beginFill(this.color).drawRoundRectComplex(w_pos, h_pos,
                 self.scene.cellule_width, self.scene.cellule_height, 10, 10, 10, 10);
+            // render star
+            if (this.is_main) {
+                this.star_graphics.clear().beginFill(this.star_color).drawPolyStar(
+                    w_pos + self.scene.cellule_width / 2,
+                    h_pos + self.scene.cellule_height / 2, self.scene.cellule_height / 4, 5, 0.6, -90);
+            }
             this.x = 0; this.y = 0;
             self.scene.update();
         });
@@ -307,50 +330,35 @@ function CreateJSClient(scene) {
         this.scene.removeChild.apply(this.scene, all_blocks);
     }
 
+    this.check_axis = function(count, pos) {
+        // check w or h axis before lvl started
+        for(var p = 0; p < count; p++) {
+            var del_list = this.scene.search_remove_candidates(pos, p, this);
+            if (del_list.length > 0) {
+                var is_game_lose = del_list.some(function(candidates) {
+                    return candidates.some(function(elem) {
+                        return elem.is_main;
+                    });
+                });
+
+                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
+                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
+                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
+                    }
+                }
+
+                if (is_game_lose) {
+                    this.show_menu_screen('lose');
+                }
+            }
+        }
+    };
+
     this.pre_start_check = function() {
-        // call this method before scene update
         // axis:w
-        for(var w = 0; w < this.scene.get_lvl_settings().width_count; w++) {
-            var del_list = this.scene.search_remove_candidates('w', w, this);
-            if (del_list.length > 0) {
-                var is_game_lose = del_list.some(function(candidates) {
-                    return candidates.some(function(elem) {
-                        return elem.is_main;
-                    });
-                });
-
-                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
-                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
-                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
-                    }
-                }
-
-                if (is_game_lose) {
-                    this.show_menu_screen('lose');
-                }
-            }
-        }
+        this.check_axis(this.scene.get_lvl_settings().width_count, 'w');
         // axis:h
-        for(var h = 0; h < this.scene.get_lvl_settings().height_count; h++) {
-            var del_list = this.scene.search_remove_candidates('h', h, this);
-            if (del_list.length > 0) {
-                var is_game_lose = del_list.some(function(candidates) {
-                    return candidates.some(function(elem) {
-                        return elem.is_main;
-                    });
-                });
-
-                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
-                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
-                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
-                    }
-                }
-
-                if (is_game_lose) {
-                    this.show_menu_screen('lose');
-                }
-            }
-        }
+        this.check_axis(this.scene.get_lvl_settings().height_count, 'h');
     }
 }
 

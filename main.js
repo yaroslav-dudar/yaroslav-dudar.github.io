@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         blocks: [
             {w: 0, h: 0, color: "#FFFF00", is_main: false},
             {w: 1, h: 1, color: "#FFFF00", is_main: false},
-            {w: 2, h: 0, color: "#FFFF00", is_main: true},
+            {w: 2, h: 0, color: "#FFFF00", is_main: true, star_color: '#FFCC33'},
             {w: 2, h: 2, color: "#fff", is_main: false}
         ]
 
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         destination_w: 0, destination_h: 4,
         count_successively: 3,
         blocks: [
-            {w: 2, h: 0, color: "#006600", is_main: true},
+            {w: 2, h: 0, color: "#006600", is_main: true, star_color: '#333300'},
         ]
     }];
     var field_width = document.getElementById('screen').offsetWidth;
@@ -37,6 +37,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     createjs.Ticker.addEventListener('tick', main_scene);
     createjs.Ticker.setFPS(60);
-    
+
     main_scene.update();
 });
