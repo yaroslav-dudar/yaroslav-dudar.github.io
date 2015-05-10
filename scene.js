@@ -1,17 +1,76 @@
-function MainScene(level_settings, field_width, field_height) {
+function Scene(level_settings, field_width, field_height, Client) {
     
     this.settings = level_settings;
+    this.client = new Client(this);
+
     this.current_lvl = 1;
     // at the start of the game neither block is selected
     this.selected_block = null;
-    /* disable selecting any block during animation
-       by default neither block selected */
+    /* disable selecting any tile during animation
+       by default neither tile selected */
     this.disable_select = false;
 
     // field size
     this.field_width = field_width;
     this.field_height = field_height;
 
+    // add ability to add, remove, search, render elements
+    this.__proto__ = this.client.create_stage('screen');
+
+    this.render_lvl = function() {
+        this.client.draw_background('#ddd');
+        this.render_game_field(Cellule, '#606060', '#aaa');
+        this.render_tiles(Block);
+        this.client.enable_scene_animation();
+    }
+
+    this.render_tiles = function(Block) {
+        for (var index = 0; index < this.get_lvl_settings().blocks.length; index++) {
+            var block_data = this.get_lvl_settings().blocks[index];
+
+            var block = new Block(block_data.w,
+                block_data.h, block_data.color, block_data.is_main, block_data.star_color);
+
+            this.client.draw_tile(block, 0.5);
+
+            this.client.handle_click_on_tile(block, this.click_on_tile_callback);
+            this.client.add_light(block);
+            this.addChild(block);
+        }
+        // find remove candidates before lvl started
+        this.pre_start_check();
+    };
+
+    this.pre_start_check = function() {
+        // axis:w
+        this.check_axis(this.get_lvl_settings().width_count, 'w');
+        // axis:h
+        this.check_axis(this.get_lvl_settings().height_count, 'h');
+    }
+
+    this.check_axis = function(count, pos) {
+        // check w or h axis before lvl started
+        for(var p = 0; p < count; p++) {
+            var del_list = this.search_remove_candidates(pos, p, this);
+            if (del_list.length > 0) {
+                var is_game_lose = del_list.some(function(candidates) {
+                    return candidates.some(function(elem) {
+                        return elem.is_main;
+                    });
+                });
+
+                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
+                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
+                        this.removeChild.apply(this.scene, del_list[l_i]);
+                    }
+                }
+
+                if (is_game_lose) {
+                    //this.show_menu_screen('lose');
+                }
+            }
+        }
+    };
     this.get_lvl_settings = function() {
         return this.settings[this.current_lvl - 1];
     }
@@ -31,15 +90,16 @@ function MainScene(level_settings, field_width, field_height) {
         this.cellule_height = (field_height - this.separator_h * (
             this.get_lvl_settings().height_count + 1)) / this.get_lvl_settings().height_count;
     }
-    // initial call
-    this.update_scene_data();
+
+    this.update_scene_data(); // calculate separarator, cellule size
 
     this.search_remove_candidates = function(axis, index, client) {
         // axis must be: w or h
         var reverse_axis = axis == 'h' ? 'w': 'h';
         var remove_list = [];
         var self = this;
-        client.get_blocks_from(axis, index)
+
+        this.client.get_tiles_from(axis, index)
             .sort(function(a, b) {return a[reverse_axis] - b[reverse_axis]})
             .reduce(function(prev, current) {
             if (prev.length == 0) {
@@ -63,12 +123,109 @@ function MainScene(level_settings, field_width, field_height) {
         return remove_list;
     }
 
-    this.calculate_center_of_cellule = function(block) {
+    this.calculate_elem_center_pos = function(block) {
+        var pos = this.calculate_elem_pos(block);
+        return {w: pos.w + this.cellule_width / 2, h: pos.h + this.cellule_height / 2};
+    };
+
+    this.calculate_elem_pos = function(block) {
         var w_pos = this.separator_w + this.separator_w *
-            block.w + this.cellule_width * block.w + this.cellule_width / 2;
+            block.w + this.cellule_width * block.w;
+
         var h_pos = this.separator_h + this.separator_h *
-            block.h + this.cellule_height * block.h + this.cellule_height / 2;
-        return {w: w_pos, h: h_pos};
+            block.h + this.cellule_height * block.h;
+        return {w: w_pos, h:h_pos};
+    };
+
+    this.render_game_field = function(Cellule, standart_collor, destination_collor) {
+        // render game field
+        for (var h = 0; h < this.get_lvl_settings().height_count; h++) {
+            for (var w = 0; w < this.get_lvl_settings().width_count; w++) {
+                var cellule_color = (this.get_lvl_settings().destination_h == h) && (
+                    this.get_lvl_settings().destination_w == w) ? standart_collor: destination_collor;
+
+                var cellule = new Cellule(w, h, cellule_color);
+                this.client.draw_cellule(cellule);
+                this.client.handle_click_on_cellule(cellule, this.click_on_cellule_callback);
+            }
+        }
+    };
+
+    this.click_on_tile_callback = function(event, client) {
+        if (client.scene.disable_select) return;
+        if (client.scene.selected_block && client.scene.selected_block != this) {
+            client.simulate_click(client.scene.selected_block);
+        }
+
+        if (this.is_selected) {
+            client.scene.selected_block = null;
+            this.is_selected = false;
+        } else {
+            client.scene.selected_block = this;
+            this.is_selected = true;
+        }
+        var stroke_width = this.is_selected ? 5 : 0.5;
+        client.draw_tile(this, stroke_width);
+        this.x = 0; this.y = 0;
+    };
+
+    this.click_on_cellule_callback = function(event, client) {
+        if (client.scene.selected_block) {
+            var shift_w = this.w - client.scene.selected_block.w;
+            var shift_h = this.h - client.scene.selected_block.h;
+            // check if block can be moved
+            if (!is_block_can_moved(shift_w, shift_h)) {
+                client.shake_sprite(client.scene.selected_block);
+                return;
+            }
+            var new_w_pos = shift_w * client.scene.separator_w + shift_w * client.scene.cellule_width;
+            var new_h_pos = shift_h * client.scene.separator_h + shift_h * client.scene.cellule_height
+
+            client.moveSpriteTo(client.scene.selected_block,
+                new_w_pos, new_h_pos, 300, client.scene.move_after_callback);
+
+            var selected_block_copy = client.scene.selected_block;
+
+            // deselected block
+            client.scene.selected_block.dispatchEvent('click');
+
+            selected_block_copy.w = this.w;
+            selected_block_copy.h = this.h;
+
+            // disable block selection during animation
+            client.scene.disable_select = true;
+        }
+    };
+
+    this.move_after_callback = function(client, sprite) {
+        var axis = ['h', 'w'];
+        for (var i = 0; i < axis.length; i++) {
+            var del_list = client.scene.search_remove_candidates(axis[i], sprite[axis[i]], client);
+            if (del_list.length > 0) {
+                var is_game_lose = del_list.some(function(candidates) {
+                    return candidates.some(function(elem) {
+                        return elem.is_main;
+                    });
+                });
+                // fade out animation
+                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
+                    var list = del_list[l_i];
+                    for(var e_i = 0; e_i < list.length; e_i++) {
+                        client.fade_out(list[e_i]);
+                    }
+                }
+
+                if (is_game_lose) {
+                    //self.show_menu_screen('lose');
+                }
+            }
+        }
+
+        if (sprite.is_main && client.scene.get_lvl_settings().destination_w == sprite.w
+            && client.scene.get_lvl_settings().destination_h == sprite.h && !is_game_lose) {
+            //self.show_menu_screen('win');
+        }
+        client.scene.disable_select = false;
     }
 };
 
@@ -76,6 +233,8 @@ function MainScene(level_settings, field_width, field_height) {
 function Cellule(w, h, color) {
     this.w = w; this.h = h;
     this.color = color;
+    // cellule not selected by default
+    this.is_selected = false;
 }
 
 
@@ -91,115 +250,128 @@ function Block(w, h, color, is_main, star_color) {
     }
 }
 
+function CreateJsClient(scene) {
 
-function CreateJSClient(scene) {
     this.scene = scene;
 
-    this.get_blocks_from = function(axis, index) {
+    this.create_stage = function(canvas_id) {
+        return new createjs.Stage(canvas_id);
+    }
+
+    this.draw_background = function(bgr_color) {
+        var background = new createjs.Shape();
+
+        background.graphics.beginFill(bgr_color).drawRoundRectComplex(0,
+            0, this.scene.field_width, this.scene.field_height, 10, 10, 10, 10);
+
+        this.scene.addChild(background);
+    }
+
+    this.add_light = function(block) {
+        block.shadow = new createjs.Shadow(block.color, 0, 0, this.scene.cellule_width / 10);
+    };
+
+    this._draw_simple_tile = function(tile, stroke_width) {
+        tile.__proto__ = new createjs.Shape();
+        var position = this.scene.calculate_elem_pos(tile);
+        tile.graphics.setStrokeStyle(stroke_width).beginStroke("#000");
+        tile.graphics.beginFill(tile.color).drawRoundRectComplex(position.w, position.h, this.scene.cellule_width,
+            this.scene.cellule_height, 10, 10, 10, 10);
+    };
+
+    this._draw_main_tile = function(tile, stroke_width) {
+        tile.__proto__ = new createjs.Container();
+        var star = new createjs.Shape();
+        var position = this.scene.calculate_elem_pos(tile);
+
+        star.graphics.beginFill(tile.star_color).drawPolyStar(
+            position.w + this.scene.cellule_width / 2,
+            position.h + this.scene.cellule_height / 2,
+            this.scene.cellule_height / 4, 5, 0.6, -90);
+
+        var block = new createjs.Shape();
+        block.graphics.setStrokeStyle(stroke_width).beginStroke("#000");
+        block.graphics.beginFill(tile.color).drawRoundRectComplex(position.w,
+            position.h, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
+        tile.addChild(block, star);
+    };
+
+    this.draw_tile = function(tile, stroke_width) {
+        tile.is_main ? this._draw_main_tile(tile, stroke_width): this._draw_simple_tile(tile, stroke_width);
+    };
+
+    this.draw_cellule = function(cellule) {
+        cellule.__proto__ = new createjs.Shape();
+        var position = this.scene.calculate_elem_pos(cellule);
+
+        cellule.graphics.beginFill(cellule.color).drawRoundRectComplex(position.w,
+            position.h, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
+
+        this.scene.addChild(cellule);
+    };
+
+    this.simulate_click = function(element) {
+        element.dispatchEvent('click');
+    };
+
+    this.clear_elem = function(elem) {
+        elem.graphics.clear();
+    };
+
+    this.set_stroke = function(tile) {
+        tile.graphics.setStrokeStyle(5).beginStroke("#000");
+    };
+
+    this.get_tiles_from = function(axis, index) {
         return this.scene.children.filter(function(elem){
             // note:every block has is_main property
             return 'is_main' in elem && elem[axis] == index;
         })
+    };
+
+    this.handle_click_on_tile = function(tile, callback) {
+        tile.on('click', callback, null, false, this);
+    };
+
+    this.handle_click_on_cellule = function(cellule, callback) {
+        cellule.on('click', callback, null, false, this);
+    };
+
+    this.shake_sprite = function(sprite) {
+        createjs.Tween.get(sprite)
+            .to({x: -5, y: 0}, 100)
+            .to({x: 5, y: 0}, 100)
+            .to({x: -5, y: 0}, 100)
+            .to({x: 0, y: 0}, 100);
+    };
+
+    this.enable_scene_animation = function() {
+        createjs.Ticker.addEventListener('tick', this.scene);
+        createjs.Ticker.setFPS(60);
     }
 
-    this.render_lvl_blocks = function(Block) {
-        for (var index = 0; index < this.scene.get_lvl_settings().blocks.length; index++) {
-            var block_data = this.scene.get_lvl_settings().blocks[index];
+    this.moveSpriteTo = function(sprite, w, h, time, callback) {
+        // callback execute after animation
+        createjs.Tween.get(sprite).to({x: w, y: h}, time).call(callback, [this, sprite]);
+    }
 
-            var w_pos = this.scene.separator_w + this.scene.separator_w *
-                block_data.w + this.scene.cellule_width * block_data.w;
-            var h_pos = this.scene.separator_h + this.scene.separator_h *
-                block_data.h + this.scene.cellule_height * block_data.h;
+    this.fade_out = function(elem) {
+        /*
+            Additionally function remove element from scene
+            (violates Single Responsibility Principle) !!!
+        */
+        // calculate center of the elem
+        var elem_center = this.scene.calculate_elem_center_pos(elem);
+        createjs.Tween.get(elem).to(
+        {scaleX: 0, scaleY: 0, x: elem_center.w, y: elem_center.h},
+        400).call(function(client) {
+            client.scene.removeChild(elem);
+        }, [this]);
+    }
+}
 
-            var block = new Block(block_data.w,
-                block_data.h, block_data.color, block_data.is_main, block_data.star_color);
-
-            if (block_data.is_main) {
-                block.__proto__ = new createjs.Container();
-                var star = new createjs.Shape();
-                star.graphics.beginFill(block_data.star_color).drawPolyStar(
-                    w_pos + this.scene.cellule_width / 2,
-                    h_pos + this.scene.cellule_height / 2, this.scene.cellule_height / 4, 5, 0.6, -90);
-
-                var tile = new createjs.Shape();
-                tile.graphics.beginFill(block.color).drawRoundRectComplex(w_pos,
-                    h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
-                block.addChild(tile, star);
-                // hack!
-                block.graphics = tile.graphics;
-                block.star_graphics = star.graphics;
-            } else {
-                block.__proto__ = new createjs.Shape();
-                // add event listener for block
-                block.graphics.beginFill(block.color).drawRoundRectComplex(w_pos,
-                    h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
-            }
-            this.handle_click_on_block(block);
-            block.shadow = new createjs.Shadow(block_data.color, 0, 0, this.scene.cellule_width / 10);
-                this.scene.addChild(block);
-        }
-        this.pre_start_check();
-    };
-
-    this.handle_click_on_block = function(block) {
-        var self = this;
-        block.on('click', function(event) {
-            if (self.scene.selected_block) {
-                if (!(self.scene.selected_block === this)) {
-                    // select another block, and deselect current
-                    self.scene.selected_block.dispatchEvent('click');
-                }
-            }
-
-            self.scene.selected_block = !this.graphics._stroke ? this: null;
-            // if block not selected
-            if (!this.graphics._stroke) {
-                if (self.scene.disable_select) return;
-                this.graphics.clear().setStrokeStyle(5).beginStroke("#000");
-            } else {
-                this.graphics.clear();
-            }
-            // calculate block position in pixels
-            var w_pos = self.scene.separator_w + self.scene.separator_w *
-                this.w + self.scene.cellule_width * this.w;
-            var h_pos = self.scene.separator_h + self.scene.separator_h *
-                this.h + self.scene.cellule_height * this.h;
-            // shadow color the same as shape color
-            this.graphics.beginFill(this.color).drawRoundRectComplex(w_pos, h_pos,
-                self.scene.cellule_width, self.scene.cellule_height, 10, 10, 10, 10);
-            // render star
-            if (this.is_main) {
-                this.star_graphics.clear().beginFill(this.star_color).drawPolyStar(
-                    w_pos + self.scene.cellule_width / 2,
-                    h_pos + self.scene.cellule_height / 2, self.scene.cellule_height / 4, 5, 0.6, -90);
-            }
-            this.x = 0; this.y = 0;
-            self.scene.update();
-        });
-    };
-
-    this.render_game_field = function(Cellule, standart_collor, destination_collor) {
-        // render game field
-        for (var h = 0; h < this.scene.get_lvl_settings().height_count; h++) {
-            for (var w = 0; w < this.scene.get_lvl_settings().width_count; w++) {
-                var cellule_color = (this.scene.get_lvl_settings().destination_h == h) && (
-                    this.scene.get_lvl_settings().destination_w == w) ? standart_collor: destination_collor;
-
-                var cellule = new Cellule(w, h, cellule_color);
-                cellule.__proto__ = new createjs.Shape();
-                this.handle_click_on_cellule(cellule);
-                // calculate cellule position on the scene
-                var w_pos = this.scene.separator_w + this.scene.separator_w *
-                    w + this.scene.cellule_width * w;
-                var h_pos = this.scene.separator_h + this.scene.separator_h *
-                    h + this.scene.cellule_height * h;
-
-                cellule.graphics.beginFill(cellule.color).drawRoundRectComplex(w_pos,
-                    h_pos, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
-                this.scene.addChild(cellule);
-            }
-        }
-    };
+function Client(scene) {
+    this.scene = scene;
 
     this.show_menu_screen = function(screen_type) {
         // screen_type: lose, win
@@ -290,7 +462,7 @@ function CreateJSClient(scene) {
                                 // calculate center of the cellule
                                 var list = del_list[l_i];
                                 for(var e_i = 0; e_i < list.length; e_i++) {
-                                    var cellule_center = self.scene.calculate_center_of_cellule(list[e_i]);
+                                    var cellule_center = self.scene.calculate_elem_center_pos(list[e_i]);
                                     createjs.Tween.get(list[e_i]).to(
                                     {scaleX: 0, scaleY: 0, x: cellule_center.w, y: cellule_center.h},
                                     400).call(function() {
@@ -313,7 +485,7 @@ function CreateJSClient(scene) {
                     self.scene.disable_select = false;
                 });
                 var block_copy = self.scene.selected_block;
-                // unselected block
+
                 self.scene.selected_block.dispatchEvent('click');
 
                 // upd block position
@@ -331,36 +503,6 @@ function CreateJSClient(scene) {
         this.scene.removeChild.apply(this.scene, all_blocks);
     }
 
-    this.check_axis = function(count, pos) {
-        // check w or h axis before lvl started
-        for(var p = 0; p < count; p++) {
-            var del_list = this.scene.search_remove_candidates(pos, p, this);
-            if (del_list.length > 0) {
-                var is_game_lose = del_list.some(function(candidates) {
-                    return candidates.some(function(elem) {
-                        return elem.is_main;
-                    });
-                });
-
-                for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
-                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
-                        this.scene.removeChild.apply(this.scene, del_list[l_i]);
-                    }
-                }
-
-                if (is_game_lose) {
-                    this.show_menu_screen('lose');
-                }
-            }
-        }
-    };
-
-    this.pre_start_check = function() {
-        // axis:w
-        this.check_axis(this.scene.get_lvl_settings().width_count, 'w');
-        // axis:h
-        this.check_axis(this.scene.get_lvl_settings().height_count, 'h');
-    }
 }
 
 function is_block_can_moved(shift_w, shift_h) {
