@@ -1,7 +1,8 @@
-function Scene(level_settings, field_width, field_height, Client) {
+function Scene(level_settings, field_width, field_height, Client, UI) {
     
     this.settings = level_settings;
     this.client = new Client(this);
+    this.ui = new UI();
 
     this.current_lvl = 1;
     // at the start of the game neither block is selected
@@ -216,17 +217,40 @@ function Scene(level_settings, field_width, field_height, Client) {
                 }
 
                 if (is_game_lose) {
-                    //self.show_menu_screen('lose');
+                    client.lock_scene('#fff');
+                    client.draw_message('Game Over :(', '#303030')
+                    client.scene.ui.create_btn('Restart');
+                    client.scene.ui.handle_click_on_btn(client.scene.restart_callback.bind(client.scene));
                 }
             }
         }
 
         if (sprite.is_main && client.scene.get_lvl_settings().destination_w == sprite.w
             && client.scene.get_lvl_settings().destination_h == sprite.h && !is_game_lose) {
-            //self.show_menu_screen('win');
+
+            client.lock_scene('#fff');
+            client.draw_message('Level complete!', '#303030')
+            client.scene.ui.create_btn('Next Level');
+            client.scene.ui.handle_click_on_btn(client.scene.next_level_callback.bind(client.scene));
         }
         client.scene.disable_select = false;
-    }
+    };
+
+    this.restart_callback = function() {
+        this.client.remove_all_scene_elements();
+        this.render_lvl();
+        this.ui.remove_btn();
+    };
+
+    this.next_level_callback = function() {
+        this.client.remove_all_scene_elements();
+        if (this.current_lvl + 1 <= this.settings.length) {
+            this.current_lvl += 1;
+            this.update_scene_data();
+        }
+        this.render_lvl();
+        this.ui.remove_btn();
+    };
 };
 
 
@@ -235,7 +259,7 @@ function Cellule(w, h, color) {
     this.color = color;
     // cellule not selected by default
     this.is_selected = false;
-}
+};
 
 
 function Block(w, h, color, is_main, star_color) {
@@ -248,262 +272,7 @@ function Block(w, h, color, is_main, star_color) {
         var h_pos = sep_h + sep_h * this.h + block_h * this.h + block_h / 2;
         return {w: w_pos, h: h_pos};
     }
-}
-
-function CreateJsClient(scene) {
-
-    this.scene = scene;
-
-    this.create_stage = function(canvas_id) {
-        return new createjs.Stage(canvas_id);
-    }
-
-    this.draw_background = function(bgr_color) {
-        var background = new createjs.Shape();
-
-        background.graphics.beginFill(bgr_color).drawRoundRectComplex(0,
-            0, this.scene.field_width, this.scene.field_height, 10, 10, 10, 10);
-
-        this.scene.addChild(background);
-    }
-
-    this.add_light = function(block) {
-        block.shadow = new createjs.Shadow(block.color, 0, 0, this.scene.cellule_width / 10);
-    };
-
-    this._draw_simple_tile = function(tile, stroke_width) {
-        tile.__proto__ = new createjs.Shape();
-        var position = this.scene.calculate_elem_pos(tile);
-        tile.graphics.setStrokeStyle(stroke_width).beginStroke("#000");
-        tile.graphics.beginFill(tile.color).drawRoundRectComplex(position.w, position.h, this.scene.cellule_width,
-            this.scene.cellule_height, 10, 10, 10, 10);
-    };
-
-    this._draw_main_tile = function(tile, stroke_width) {
-        tile.__proto__ = new createjs.Container();
-        var star = new createjs.Shape();
-        var position = this.scene.calculate_elem_pos(tile);
-
-        star.graphics.beginFill(tile.star_color).drawPolyStar(
-            position.w + this.scene.cellule_width / 2,
-            position.h + this.scene.cellule_height / 2,
-            this.scene.cellule_height / 4, 5, 0.6, -90);
-
-        var block = new createjs.Shape();
-        block.graphics.setStrokeStyle(stroke_width).beginStroke("#000");
-        block.graphics.beginFill(tile.color).drawRoundRectComplex(position.w,
-            position.h, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
-        tile.addChild(block, star);
-    };
-
-    this.draw_tile = function(tile, stroke_width) {
-        tile.is_main ? this._draw_main_tile(tile, stroke_width): this._draw_simple_tile(tile, stroke_width);
-    };
-
-    this.draw_cellule = function(cellule) {
-        cellule.__proto__ = new createjs.Shape();
-        var position = this.scene.calculate_elem_pos(cellule);
-
-        cellule.graphics.beginFill(cellule.color).drawRoundRectComplex(position.w,
-            position.h, this.scene.cellule_width, this.scene.cellule_height, 10, 10, 10, 10);
-
-        this.scene.addChild(cellule);
-    };
-
-    this.simulate_click = function(element) {
-        element.dispatchEvent('click');
-    };
-
-    this.clear_elem = function(elem) {
-        elem.graphics.clear();
-    };
-
-    this.set_stroke = function(tile) {
-        tile.graphics.setStrokeStyle(5).beginStroke("#000");
-    };
-
-    this.get_tiles_from = function(axis, index) {
-        return this.scene.children.filter(function(elem){
-            // note:every block has is_main property
-            return 'is_main' in elem && elem[axis] == index;
-        })
-    };
-
-    this.handle_click_on_tile = function(tile, callback) {
-        tile.on('click', callback, null, false, this);
-    };
-
-    this.handle_click_on_cellule = function(cellule, callback) {
-        cellule.on('click', callback, null, false, this);
-    };
-
-    this.shake_sprite = function(sprite) {
-        createjs.Tween.get(sprite)
-            .to({x: -5, y: 0}, 100)
-            .to({x: 5, y: 0}, 100)
-            .to({x: -5, y: 0}, 100)
-            .to({x: 0, y: 0}, 100);
-    };
-
-    this.enable_scene_animation = function() {
-        createjs.Ticker.addEventListener('tick', this.scene);
-        createjs.Ticker.setFPS(60);
-    }
-
-    this.moveSpriteTo = function(sprite, w, h, time, callback) {
-        // callback execute after animation
-        createjs.Tween.get(sprite).to({x: w, y: h}, time).call(callback, [this, sprite]);
-    }
-
-    this.fade_out = function(elem) {
-        /*
-            Additionally function remove element from scene
-            (violates Single Responsibility Principle) !!!
-        */
-        // calculate center of the elem
-        var elem_center = this.scene.calculate_elem_center_pos(elem);
-        createjs.Tween.get(elem).to(
-        {scaleX: 0, scaleY: 0, x: elem_center.w, y: elem_center.h},
-        400).call(function(client) {
-            client.scene.removeChild(elem);
-        }, [this]);
-    }
-}
-
-function Client(scene) {
-    this.scene = scene;
-
-    this.show_menu_screen = function(screen_type) {
-        // screen_type: lose, win
-        // blocking main screen
-        var block_screen = new createjs.Shape();
-        block_screen.graphics.beginFill("#fff").drawRoundRectComplex(0,
-            0, this.scene.field_width, this.scene.field_height, 10, 10, 10, 10);
-        block_screen.on('click', function(event) {});
-        block_screen.alpha = 0;
-        this.scene.addChild(block_screen);
-
-        createjs.Tween.get(block_screen).to({alpha: 0.7}, 500);
-
-        // create button
-        var btn = document.createElement('button');
-        btn.setAttribute('id', 'btn');
-        btn.innerHTML = screen_type == 'lose' || this.scene.is_last_lvl() ? 'Restart': 'Next Level';
-        var screen_elem = document.getElementById('screen');
-        screen_elem.parentNode.insertBefore(btn, screen_elem.nextSibling);
-        // render message on the scrren
-        var text = screen_type == 'lose' ? 'Game over :(' : 'Level complete!';
-        var message = new createjs.Text(text,
-            "bold 20px Ubuntu Mono, cursive, Arial", "#303030");
-        message.x = document.getElementById('screen').offsetWidth / 2 - 60;
-        message.y = document.getElementById('screen').offsetHeight / 2 - 10;
-
-        var self = this;
-        this.scene.addChild(message);
-
-        btn.addEventListener('click', function() {
-            self.remove_all_blocks();
-            self.scene.removeChild(block_screen, message);
-            if (screen_type == 'win' && !self.scene.is_last_lvl()) {
-                // switch lvl
-                self.scene.current_lvl += 1;
-                self.scene.removeAllChildren();
-                self.scene.update_scene_data();
-
-                var background = new createjs.Shape();
-
-                background.graphics.beginFill("#ddd").drawRoundRectComplex(0,
-                    0, self.scene.field_width, self.scene.field_height, 10, 10, 10, 10);
-                self.scene.addChild(background);
-                self.render_game_field(Cellule, '#606060', '#aaa');
-            }
-            self.render_lvl_blocks(Block);
-            document.getElementById('container').removeChild(this);
-        });
-    };
-
-    this.handle_click_on_cellule = function(cellule) {
-        var self = this;
-        cellule.on('click', function(event) {
-            if (self.scene.selected_block) {
-                var shift_w = cellule.w - self.scene.selected_block.w;
-                var shift_h = cellule.h - self.scene.selected_block.h;
-                // check if block can be moved
-                if (!is_block_can_moved(shift_w, shift_h)) {
-                    // shake effect
-                    createjs.Tween.get(self.scene.selected_block, {loop: false})
-                        .to({x: -5, y: 0}, 100)
-                        .to({x: 5, y: 0}, 100)
-                        .to({x: -5, y: 0}, 100)
-                        .to({x: 0, y: 0}, 100);
-                    return;
-                }
-
-                var w = shift_w * self.scene.separator_w + shift_w * self.scene.cellule_width;
-                var h = shift_h * self.scene.separator_h + shift_h * self.scene.cellule_height;
-                // disable block selection during animation
-                self.scene.disable_select = true;
-                // start move animation and handle when it ended
-                createjs.Tween.get(self.scene.selected_block).to({x: w, y: h}, 300).call(function() {
-
-                    var axis = ['h', 'w'];
-                    for (var i = 0; i < axis.length; i++) {
-                        
-                        var del_list = self.scene.search_remove_candidates(axis[i], block_copy[axis[i]], self);
-                        
-                        if (del_list.length > 0) {
-                            var is_game_lose = del_list.some(function(candidates) {
-                                return candidates.some(function(elem) {
-                                    return elem.is_main;
-                                });
-                            });
-                            // reduction animation
-                            for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
-                                // calculate center of the cellule
-                                var list = del_list[l_i];
-                                for(var e_i = 0; e_i < list.length; e_i++) {
-                                    var cellule_center = self.scene.calculate_elem_center_pos(list[e_i]);
-                                    createjs.Tween.get(list[e_i]).to(
-                                    {scaleX: 0, scaleY: 0, x: cellule_center.w, y: cellule_center.h},
-                                    400).call(function() {
-                                        self.scene.removeChild.apply(self.scene, list);
-                                    });
-                                }
-                            }
-
-                            if (is_game_lose) {
-                                self.show_menu_screen('lose');
-                            }
-                        }
-                    }
-
-                    // check destination cellule
-                    if (block_copy.is_main && self.scene.get_lvl_settings().destination_w == block_copy.w
-                        && self.scene.get_lvl_settings().destination_h == block_copy.h && !is_game_lose) {
-                        self.show_menu_screen('win');
-                    }
-                    self.scene.disable_select = false;
-                });
-                var block_copy = self.scene.selected_block;
-
-                self.scene.selected_block.dispatchEvent('click');
-
-                // upd block position
-                block_copy.w = cellule.w;
-                block_copy.h = cellule.h;
-            }
-        });
-    };
-
-    this.remove_all_blocks = function() {
-        var all_blocks = this.scene.children.filter(function(elem){
-            // note:every block has is_main property
-            return 'is_main' in elem
-        });
-        this.scene.removeChild.apply(this.scene, all_blocks);
-    }
-
-}
+};
 
 function is_block_can_moved(shift_w, shift_h) {
     if (!(shift_h == 0 || shift_w == 0)) return false;
@@ -511,4 +280,26 @@ function is_block_can_moved(shift_w, shift_h) {
     if (!(shift_w >= -1 && shift_w <= 1)) return false;
 
     return true;
-}
+};
+
+function UI() {
+
+    this.btn = null;
+
+    this.create_btn = function(text) {
+        this.btn = document.createElement('button');
+        this.btn.setAttribute('id', 'btn');
+        this.btn.innerHTML = text;
+        var screen_elem = document.getElementById('screen');
+        screen_elem.parentNode.insertBefore(this.btn, screen_elem.nextSibling);
+    }
+
+    this.remove_btn = function() {
+        document.getElementById('container').removeChild(this.btn);
+        this.btn = null;
+    }
+
+    this.handle_click_on_btn = function(callback) {
+        this.btn.addEventListener('click', callback);
+    }
+};

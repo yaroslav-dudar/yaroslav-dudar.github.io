@@ -45,6 +45,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var field_height = document.getElementById('screen').offsetHeight;
 
     // canvas tag id: screen
-    var main_scene = new Scene(settings, field_height, field_width, CreateJsClient);
+    var main_scene = new Scene(settings, field_height, field_width, CreateJsClient, UI);
     main_scene.render_lvl();
 });
