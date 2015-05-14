@@ -1,13 +1,17 @@
 document.addEventListener("DOMContentLoaded", function(event) {
     var settings = [{
         width_count: 3, height_count: 3,
-        destination_w: 0, destination_h: 1,
+        destination_w: 0, destination_h: 2,
         count_successively: 3,
         blocks: [
-            {w: 0, h: 0, color: "#FFFF00", is_main: false},
+            {w: 2, h: 0, color: "#FFFF00", is_main: false},
             {w: 1, h: 1, color: "#FFFF00", is_main: false},
-            {w: 2, h: 0, color: "#FFFF00", is_main: true, star_color: '#FFCC33'},
-            {w: 2, h: 2, color: "#fff", is_main: false}
+            {w: 1, h: 2, color: "#FFFF00", is_main: false},
+            {w: 2, h: 2, color: "#FFFF00", is_main: true, star_color: '#FFCC33'},
+            {w: 0, h: 0, color: "#fff", is_main: false},
+            {w: 1, h: 0, color: "#fff", is_main: false},
+            {w: 0, h: 1, color: "#fff", is_main: false},
+            {w: 2, h: 1, color: "#fff", is_main: false}
         ]
 
     }, {
@@ -41,21 +45,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var field_height = document.getElementById('screen').offsetHeight;
 
     // canvas tag id: screen
-    MainScene.prototype = new createjs.Stage("screen");
-
-    var main_scene = new MainScene(settings, field_height, field_width);
-    var background = new createjs.Shape();
-
-    background.graphics.beginFill("#ddd").drawRoundRectComplex(0,
-        0, field_width, field_height, 10, 10, 10, 10);
-    main_scene.addChild(background);
-
-    var client = new CreateJSClient(main_scene); 
-    client.render_game_field(Cellule, '#606060', '#aaa');
-    client.render_lvl_blocks(Block);
-
-    createjs.Ticker.addEventListener('tick', main_scene);
-    createjs.Ticker.setFPS(60);
-
-    main_scene.update();
+    var main_scene = new Scene(settings, field_height, field_width, CreateJsClient, UI);
+    main_scene.render_lvl();
 });
