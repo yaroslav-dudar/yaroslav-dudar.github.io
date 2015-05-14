@@ -1,0 +1,56 @@
+#container {
+    margin: auto;
+    width: 300px;
+}
+
+.text {
+    font-family: Ubuntu Mono, cursive, Arial;
+    font-size: 18px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 500;
+    line-height: 19px;
+}
+
+#btn {
+    -webkit-animation: fadein 3s; /* Safari, Chrome and Opera > 12.1 */
+    -moz-animation: fadein 3s; /* Firefox < 16 */
+    -ms-animation: fadein 3s; /* Internet Explorer */
+    -o-animation: fadein 3s; /* Opera < 12.1 */
+    animation: fadein 3s;
+    display: block;
+    margin: auto;
+    background: #A8A8A8;
+    border: 1px solid;
+    border-radius: 5px;
+    font-family: Ubuntu Mono, cursive, Arial;
+    font-size: 15px;
+    padding: 5px;
+}
+
+#btn:hover {
+    background: #D0D0D0;
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
