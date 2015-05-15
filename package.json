@@ -1,0 +1,4 @@
+{   "name" : "createjs",
+    "version" : "1.4.21",
+    "dependencies": { "chai": "2.3.0" }
+}

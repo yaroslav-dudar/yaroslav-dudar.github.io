@@ -257,8 +257,6 @@ function Scene(level_settings, field_width, field_height, Client, UI) {
 function Cellule(w, h, color) {
     this.w = w; this.h = h;
     this.color = color;
-    // cellule not selected by default
-    this.is_selected = false;
 };
 
 
@@ -266,6 +264,9 @@ function Block(w, h, color, is_main, star_color) {
     this.w = w; this.h = h;
     this.color = color; this.is_main = is_main;
     this.star_color = star_color;
+
+    // block not selected by default
+    this.is_selected = false;
 
     this.calculate_block_center = function(sep_w, sep_h, block_h, block_w) {
         var w_pos = sep_w + sep_w * this.w + block_w * this.w + block_w / 2;

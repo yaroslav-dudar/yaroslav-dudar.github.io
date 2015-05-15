@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <script src="../node_modules/chai/chai.js"></script>
+        <!-- load modules -->
+        <script src="mock_client.js"></script>
+        <script src="../scene.js"></script>
+    </head>
+    <body>
+        <script>
+            var test_settings = [{
+                width_count: 3, height_count: 3,
+                destination_w: 0, destination_h: 2,
+                count_successively: 3,
+                blocks: [
+                    {w: 2, h: 0, color: "#FFFF00", is_main: false},
+                    {w: 1, h: 1, color: "#FFFF00", is_main: false},
+                    {w: 1, h: 2, color: "#FFFF00", is_main: false},
+                    {w: 2, h: 2, color: "#FFFF00", is_main: true, star_color: '#FFCC33'}
+                ]
+            }];
+
+            var field_height = 300;
+            var field_width = 300;
+            var test_scene = new Scene(test_settings, field_height, field_width, MockClient, UI);
+
+            chai.expect(test_scene.field_height).to.equal(300);
+            chai.expect(test_scene.field_width).to.equal(300);
+            chai.expect(test_scene.current_lvl).to.equal(1);
+            chai.expect(test_scene.selected_block).to.equal(null);
+
+            chai.expect(test_scene.cellule_width).to.equal(88);
+            chai.expect(test_scene.cellule_height).to.equal(88);
+
+            chai.expect(test_scene.separator_h).to.equal(9);
+            chai.expect(test_scene.separator_w).to.equal(9);
+
+            test_scene.render_lvl();
+            // draw background
+            chai.expect(test_scene.client.actions).to.include('draw background');
+            // enable animation
+            chai.expect(test_scene.client.actions).to.include('enable animation');
+            // TODO: check blocks and cellules
+
+        </script>
+    </body>
+</html>

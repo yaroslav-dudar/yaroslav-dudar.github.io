@@ -121,7 +121,7 @@ function CreateJsClient(scene) {
         var lock_elem = new createjs.Shape();
         lock_elem.graphics.beginFill(color).drawRoundRectComplex(0,
             0, this.scene.field_width, this.scene.field_height, 10, 10, 10, 10);
-        // do nothing when is pressed on element
+        // do nothing when element is pressed
         lock_elem.on('click', function(event) {});
         lock_elem.alpha = 0;
         createjs.Tween.get(lock_elem).to({alpha: 0.7}, 500);
