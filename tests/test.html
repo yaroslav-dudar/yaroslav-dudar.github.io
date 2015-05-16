@@ -8,6 +8,10 @@
         <script src="../scene.js"></script>
     </head>
     <body>
+        <div id='container'>
+            <canvas id="screen"></canvas>
+        </div>
+
         <script>
             var test_settings = [{
                 width_count: 3, height_count: 3,
@@ -41,8 +45,49 @@
             chai.expect(test_scene.client.actions).to.include('draw background');
             // enable animation
             chai.expect(test_scene.client.actions).to.include('enable animation');
-            // TODO: check blocks and cellules
 
+            // click on tile(select w:2 h:0)
+            var tile = test_scene.children[10];
+            tile.click();
+            chai.expect(tile).to.equal(test_scene.selected_block);
+            // deselect
+            tile.click();
+            chai.expect(tile).not.equal(test_scene.selected_block);
+            // select tile
+            tile.click();
+            // try to move tile through 2 cellules
+            test_scene.children[1].click();
+            // can't move it
+            chai.expect(test_scene.client.actions[2].shake_sprite).to.equal(tile);
+            // move to w:1 h:0
+            test_scene.children[2].click();
+            // check that tile removed
+            chai.expect(test_scene.children).to.not.include(tile);
+            // get main tile
+            var main_tile = test_scene.children[10];
+            // select main tile
+            main_tile.click();
+            chai.expect(main_tile).to.equal(test_scene.selected_block);
+            // move left
+            test_scene.children[8].click();
+            // check main tail pos
+            chai.expect(main_tile.w).to.equal(test_scene.children[8].w);
+            chai.expect(main_tile.h).to.equal(test_scene.children[8].h);
+            // move tail to destination cellule
+            main_tile.click();
+            test_scene.children[7].click();
+            // lvl complete
+            chai.expect(test_scene.client.actions[3].msg_text).to.equal('Level complete!');
+            // restart lvl
+            test_scene.ui.btn.click();
+            tile = test_scene.children[11];
+            tile.click();
+            // move to w:2 h:1
+            test_scene.children[6].click();
+            chai.expect(test_scene.client.actions[2].msg_text).to.equal('Game Over :(');
+            // remove tile
+            chai.expect(test_scene.children).to.not.include(tile);
+            test_scene.ui.btn.click();
         </script>
     </body>
 </html>

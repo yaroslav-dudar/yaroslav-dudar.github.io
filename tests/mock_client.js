@@ -13,11 +13,12 @@ function MockClient(scene) {
                     Array.prototype.slice.call(arguments));
             },
 
-            removeChild: function(arguments) {
+            removeChild: function() {
                 var args = Array.prototype.slice.call(arguments);
-                this.children = this.filter(function(item) {
+                var candidates = this.children.filter(function(item) {
                     return args.indexOf(item) == -1;
                 });
+                this.children = candidates;
             },
 
             removeAllChildren: function() {
@@ -36,12 +37,12 @@ function MockClient(scene) {
     };
 
     this.remove_all_scene_elements = function() {
+        this.actions = [];
         this.scene.removeAllChildren();
     };
 
     this.draw_tile = function(tile, stroke_width) {
         tile.__proto__ = {stroke: stroke_width, x: 0, y: 0};
-        this.scene.addChild(tile);
     };
 
     this.draw_cellule = function(cellule) {
@@ -75,7 +76,7 @@ function MockClient(scene) {
         this.x = w;
         this.y = h;
         callback(this, sprite);
-    }
+    };
 
     this.lock_scene = function(color) {
         var lock_elem = { lock_scene: color };
@@ -83,18 +84,30 @@ function MockClient(scene) {
     };
 
     this.draw_message = function(msg_text, color) {
-        this.scene.addChild({ msg_text: msg_text, color: color });
+        var mock_msg = { msg_text: msg_text, color: color };
+        this.scene.addChild(mock_msg);
+        this.actions.push(mock_msg);
     };
 
     this.fade_out = function(elem) {
-        client.scene.removeChild(elem);
-    }
+        this.scene.removeChild(elem);
+    };
+
+    this.simulate_click = function(element) {
+        element.click();
+    };
 
     this.handle_click_on_tile = function(tile, callback) {
-        //callback(this);
+        var client = this;
+        tile.click =  function() {
+            callback.call(tile, null, client); // event:null
+        };
     };
 
     this.handle_click_on_cellule = function(cellule, callback) {
-        //callback(this);
+        var client = this;
+        cellule.click =  function() {
+            callback.call(cellule, null, client); // event:null
+        };
     };
 }

@@ -182,19 +182,19 @@ function Scene(level_settings, field_width, field_height, Client, UI) {
             var new_w_pos = shift_w * client.scene.separator_w + shift_w * client.scene.cellule_width;
             var new_h_pos = shift_h * client.scene.separator_h + shift_h * client.scene.cellule_height
 
-            client.moveSpriteTo(client.scene.selected_block,
-                new_w_pos, new_h_pos, 300, client.scene.move_after_callback);
-
             var selected_block_copy = client.scene.selected_block;
 
             // deselected block
-            client.scene.selected_block.dispatchEvent('click');
+            client.simulate_click(client.scene.selected_block);
 
             selected_block_copy.w = this.w;
             selected_block_copy.h = this.h;
 
             // disable block selection during animation
             client.scene.disable_select = true;
+
+            client.moveSpriteTo(selected_block_copy,
+                new_w_pos, new_h_pos, 300, client.scene.move_after_callback);
         }
     };
 
