@@ -131,8 +131,8 @@ function CreateJsClient(scene) {
     this.draw_message = function(msg_text, color) {
         var message = new createjs.Text(msg_text,
             "bold 20px Ubuntu Mono, cursive, Arial", color);
-        message.x = document.getElementById('screen').offsetWidth / 2 - 60;
-        message.y = document.getElementById('screen').offsetHeight / 2 - 10;
+        message.x = this.scene.field_width / 2 - 60;
+        message.y = this.scene.field_height / 2 - 10;
         this.scene.addChild(message);
     };
 

@@ -61,13 +61,11 @@ function Scene(level_settings, field_width, field_height, Client, UI) {
                 });
 
                 for (var l_i = del_list.length - 1; l_i >= 0 ; l_i--) {
-                    for(var e_i = 0; e_i < del_list[l_i].length; e_i++) {
-                        this.removeChild.apply(this.scene, del_list[l_i]);
-                    }
+                    this.removeChild.apply(this, del_list[l_i]);
                 }
 
                 if (is_game_lose) {
-                    //this.show_menu_screen('lose');
+                    this.game_over(this.client);
                 }
             }
         }
@@ -217,21 +215,14 @@ function Scene(level_settings, field_width, field_height, Client, UI) {
                 }
 
                 if (is_game_lose) {
-                    client.lock_scene('#fff');
-                    client.draw_message('Game Over :(', '#303030')
-                    client.scene.ui.create_btn('Restart');
-                    client.scene.ui.handle_click_on_btn(client.scene.restart_callback.bind(client.scene));
+                    client.scene.game_over(client);
                 }
             }
         }
 
         if (sprite.is_main && client.scene.get_lvl_settings().destination_w == sprite.w
             && client.scene.get_lvl_settings().destination_h == sprite.h && !is_game_lose) {
-
-            client.lock_scene('#fff');
-            client.draw_message('Level complete!', '#303030')
-            client.scene.ui.create_btn('Next Level');
-            client.scene.ui.handle_click_on_btn(client.scene.next_level_callback.bind(client.scene));
+            client.scene.level_complete(client);
         }
         client.scene.disable_select = false;
     };
@@ -250,6 +241,20 @@ function Scene(level_settings, field_width, field_height, Client, UI) {
         }
         this.render_lvl();
         this.ui.remove_btn();
+    };
+
+    this.game_over = function(client) {
+        client.lock_scene('#fff');
+        client.draw_message('Game Over :(', '#303030')
+        client.scene.ui.create_btn('Restart');
+        client.scene.ui.handle_click_on_btn(client.scene.restart_callback.bind(client.scene));
+    };
+
+    this.level_complete = function(client) {
+        client.lock_scene('#fff');
+        client.draw_message('Level complete!', '#303030')
+        client.scene.ui.create_btn('Next Level');
+        client.scene.ui.handle_click_on_btn(client.scene.next_level_callback.bind(client.scene));
     };
 };
 

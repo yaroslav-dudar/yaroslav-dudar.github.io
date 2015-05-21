@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pastime</title>
     <script src="https://code.createjs.com/createjs-2014.12.12.min.js"></script>
     <script src="create_js_client.js"></script>
@@ -11,9 +12,9 @@
 </head>
 <body>
     <div id='container'>
-        <canvas id="screen" width='300' height='300'></canvas>
-        <p class='text'> How to play: Select tiles and move them (up, down, left, right).
-            When main tile will be at the destination cellue you will win.
+        <canvas id='screen'></canvas>
+        <p class='text'> How to play: Select tile and move it (up, down, left, right).
+            When main tile(with star icon) will be at the destination cellue you will win.
             Three tiles in a row or column is removed from the field.</p>
     </div>
 </body>

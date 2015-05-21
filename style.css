@@ -1,6 +1,37 @@
-#container {
-    margin: auto;
-    width: 300px;
+@media (min-width: 760px) {
+    #container {
+        margin:  25px auto;
+        width: 500px;
+    }
+
+    #screen {
+        width: 500px;
+        height: 500px;
+    }
+}
+
+@media (max-width: 760px) {
+    #container {
+        margin: 25px auto;
+        width: 400px;
+    }
+
+    #screen {
+        width: 400px;
+        height: 400px;
+    }
+}
+
+@media (orientation: portrait) {
+    #container {
+        margin:  2vh auto;
+        width: 80vw;
+    }
+
+    #screen {
+        width: 80vw;
+        height: 80vw;
+    }
 }
 
 .text {

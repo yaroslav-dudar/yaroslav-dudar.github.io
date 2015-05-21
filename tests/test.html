@@ -23,12 +23,29 @@
                     {w: 1, h: 2, color: "#FFFF00", is_main: false},
                     {w: 2, h: 2, color: "#FFFF00", is_main: true, star_color: '#FFCC33'}
                 ]
+            }, {
+                width_count: 4, height_count: 4,
+                destination_w: 3, destination_h: 2,
+                count_successively: 3,
+                blocks: [
+                    {w: 1, h: 0, color: "#006666", is_main: false},
+                    {w: 1, h: 1, color: "#006666", is_main: false},
+                    {w: 2, h: 2, color: "#006666", is_main: true, star_color: '#009966'}
+                ]
+            }, {
+                width_count: 3, height_count: 3,
+                destination_w: 0, destination_h: 0,
+                count_successively: 3,
+                blocks: [
+                    {w: 1, h: 2, color: "#006666", is_main: false},
+                    {w: 0, h: 2, color: "#006666", is_main: false},
+                    {w: 2, h: 2, color: "#006666", is_main: true, star_color: '#009966'}
+                ]
             }];
 
             var field_height = 300;
             var field_width = 300;
             var test_scene = new Scene(test_settings, field_height, field_width, MockClient, UI);
-
             chai.expect(test_scene.field_height).to.equal(300);
             chai.expect(test_scene.field_width).to.equal(300);
             chai.expect(test_scene.current_lvl).to.equal(1);
@@ -78,16 +95,27 @@
             test_scene.children[7].click();
             // lvl complete
             chai.expect(test_scene.client.actions[3].msg_text).to.equal('Level complete!');
-            // restart lvl
+            // go to the next lvl
             test_scene.ui.btn.click();
-            tile = test_scene.children[11];
+            tile = test_scene.children[19];
             tile.click();
-            // move to w:2 h:1
-            test_scene.children[6].click();
+            // move to w:1 h:2
+            test_scene.children[10].click();
             chai.expect(test_scene.client.actions[2].msg_text).to.equal('Game Over :(');
             // remove tile
             chai.expect(test_scene.children).to.not.include(tile);
             test_scene.ui.btn.click();
+            test_scene.children[19].click();
+            // move to w:3 h:2
+            test_scene.children[12].click();
+            // lvl complete
+            chai.expect(test_scene.client.actions[2].msg_text).to.equal('Level complete!');
+            // next lvl
+            test_scene.ui.btn.click();
+            // pre_start_check
+            chai.expect(test_scene.children[11].msg_text).to.equal('Game Over :(');
+            // remove annoying btn
+            document.getElementById('btn').parentElement.removeChild(document.getElementById('btn'));
         </script>
     </body>
 </html>
