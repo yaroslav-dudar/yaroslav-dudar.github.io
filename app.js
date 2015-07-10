@@ -22,7 +22,7 @@ d3.csv("Entity_CFCs.csv", function(data) {
         
         setProjection: function(element) {
             var projection = d3.geo.equirectangular()
-              .center([-118, 34])
+              .center([-116, 32])
               .rotate([0, 30])
               .scale(2000)
               .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
