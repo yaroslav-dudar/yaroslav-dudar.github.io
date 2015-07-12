@@ -170,7 +170,6 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
 
     function mouseover(d) {
             tooltip.style("visibility", "visible");
-            console.log(d3.event.pageX, d3.event.pageY)
             var full_data_name = d3.time.format("%B %Y")
             var purchase_text = full_data_name(format.parse(d[0])) + "<br>Casenote count: " + d[1].length;
             tooltip.transition()        
