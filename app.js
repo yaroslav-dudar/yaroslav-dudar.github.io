@@ -189,29 +189,20 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
 });
 
 
-var data; // loaded asynchronously
-
 var path = d3.geo.path();
 
-var svg2 = d3.select("#illinois-map")
-  .attr("viewBox", "0 0 960 500")
-  .attr("preserveAspectRatio", "none")
-  .append("svg");
+var svg2 = d3.select("#illinois-map").append("svg")
+    .attr("width", 400)
+    .attr("height", 500);
 
-var counties = svg2.append("g")
-    .attr("id", "counties")
-    .attr("class", "Blues");
+d3.json("ill-counties.json", function(error, topology) {
+  if (error) throw error;
 
-var states = svg2.append("g")
-    .attr("id", "states");
-
-d3.json("ill-counties.json", function(json) {
-  counties.selectAll("path")
-      .data(json.features)
+  svg2.selectAll("path")
+      .data(topojson.feature(topology, topology.objects.counties).features)
     .enter().append("path")
+      .attr("id", "counties")
       .attr("d", path);
 });
-
-// scale
 svg2
-    .attr("transform", "scale(5)translate(-540, -185)rotate(4, 300, 150)")
+    .attr("transform", "scale(4.3)translate(-540, -190)rotate(4, 300, 150)")
