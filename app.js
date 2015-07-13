@@ -1,4 +1,5 @@
 // CFC Location
+$('map_usa').empty();
 d3.csv("Entity_CFCs.csv", function(data) {
     var map = new Datamap({
         element: document.getElementById('map_usa'),
@@ -25,7 +26,7 @@ d3.csv("Entity_CFCs.csv", function(data) {
               .center([-113, 33.5])
               .rotate([0, 30])
               .scale(2000)
-              .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
+              .translate([700 / 2, 500 / 2]);
             var path = d3.geo.path()
               .projection(projection);
             
