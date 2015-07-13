@@ -205,4 +205,4 @@ d3.json("ill-counties.json", function(error, topology) {
       .attr("d", path);
 });
 svg2
-    .attr("transform", "scale(4)translate(-170, 20)rotate(4)")
+    .attr("transform", "scale(4)translate(-505, -175)rotate(4, 400, 0)")
