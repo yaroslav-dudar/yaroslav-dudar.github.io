@@ -12,7 +12,7 @@ path {
 path:hover {
   fill: red;
 }
-
+svg { max-height: 100%; }
 </style>
 </head><body>
 <script src="assets/global/scripts/d3.min.js" type="text/javascript"></script>
@@ -37,7 +37,7 @@ d3.json("ill-counties.json", function(error, topology) {
       .attr("d", path);
 });
 svg
-  .attr("transform", "scale(1.5)translate(-100, -190)rotate(3, 300, 150)")
+  .attr("transform", "scale(4.2)translate(-100, -190)rotate(3, 300, 150)")
 </script>
 </body>
 </html>
