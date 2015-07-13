@@ -192,7 +192,7 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
 var path = d3.geo.path();
 
 var svg2 = d3.select("#illinois-map").append("svg")
-    .attr("width", 400)
+    .attr("width", 960)
     .attr("height", 500);
 
 d3.json("ill-counties.json", function(error, topology) {
