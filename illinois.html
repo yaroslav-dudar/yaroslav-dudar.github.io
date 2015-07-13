@@ -12,7 +12,10 @@ path {
 path:hover {
   fill: red;
 }
-svg { max-height: 100%; }
+svg { 
+  max-height: 100%; 
+  -webkit-transform: scale(4.2) translate(-500, -190) rotate(4, 300, 150);
+}
 </style>
 </head>
 <body style='max-width: 100%;'>
@@ -39,7 +42,6 @@ d3.json("ill-counties.json", function(error, topology) {
 });
 svg
   .attr("transform", "scale(4.2) translate(-500, -190) rotate(4, 300, 150)")
-  .attr("-webkit-transform-origin", "scale(4.2) translate(-500, -190) rotate(4, 300, 150)");
 </script>
 </body>
 </html>
