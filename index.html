@@ -59,6 +59,21 @@ License: You must have a valid license purchased only from themeforest(the above
 	  border: 2px solid #ccc;
 	  padding: 10px;
 	}
+
+    #illinois-map svg{
+        width: 400px;
+        height: 600px;
+    }
+
+	#counties path {
+      stroke: #000000;
+      stroke-width: .2px;
+      fill: #CCCCFF;
+    }
+
+    #counties path:hover {
+        opacity: 0.2;
+    }
 </style>
 </head>
 <!-- END HEAD -->
@@ -533,6 +548,24 @@ License: You must have a valid license purchased only from themeforest(the above
 								<!-- REGIONAL STATS -->
 								<div id="region_statistics_content">
 									<div id="cfc_history"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<i class="icon-share font-red-sunglo"></i>
+									<span class="caption-subject font-red-sunglo bold uppercase">Illinois</span>
+								</div>
+							</div>
+							<div class="portlet-body">
+								<!-- REGIONAL STATS -->
+								<div id="region_statistics_content">
+									<div id="illinois-map"></div>
 								</div>
 							</div>
 						</div>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>U.S. County Map</title>
+    <script src="assets/global/scripts/d3.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="d3.geo.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="choropleth.css"/>
+    <link type="text/css" rel="stylesheet" href="colorbrewer.css"/>
+    <style type="text/css">
+        #chart svg{
+            width: 400px;
+            height: 500px;
+        }
+
+        #counties path {
+          stroke: #000000;
+          stroke-width: .2px;
+          fill: #CCCCFF;
+        }
+        #counties path:hover {
+            opacity: 0.2;
+        }
+
+    </style>
+  </head>
+  <body>
+	
+    <div id="chart"></div>
+
+		<script data-joshfire-bootstrap></script>
+
+    <script type="text/javascript">
+
+			// See http://mbostock.github.com/d3/ex/choropleth.html
+
+			var data; // loaded asynchronously
+
+			var path = d3.geo.path();
+
+			var svg = d3.select("#chart")
+              .attr("viewBox", "0 0 960 500")
+              .attr("preserveAspectRatio", "none")
+			  .append("svg");
+
+			var counties = svg.append("g")
+			    .attr("id", "counties")
+			    .attr("class", "Blues");
+
+			var states = svg.append("g")
+			    .attr("id", "states");
+
+			d3.json("ill-counties.json", function(json) {
+			  counties.selectAll("path")
+			      .data(json.features)
+			    .enter().append("path")
+			      .attr("d", path);
+			});
+
+            // scale
+            svg
+                .attr("transform", "scale(5)translate(-550, -190)rotate(5, 300, 150)")
+
+		</script>
+  </body>
+</html>

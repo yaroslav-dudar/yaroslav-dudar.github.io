@@ -187,3 +187,31 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
           .style("opacity", 0);
     }
 });
+
+
+var data; // loaded asynchronously
+
+var path = d3.geo.path();
+
+var svg2 = d3.select("#illinois-map")
+  .attr("viewBox", "0 0 960 500")
+  .attr("preserveAspectRatio", "none")
+  .append("svg");
+
+var counties = svg2.append("g")
+    .attr("id", "counties")
+    .attr("class", "Blues");
+
+var states = svg2.append("g")
+    .attr("id", "states");
+
+d3.json("ill-counties.json", function(json) {
+  counties.selectAll("path")
+      .data(json.features)
+    .enter().append("path")
+      .attr("d", path);
+});
+
+// scale
+svg2
+    .attr("transform", "scale(5)translate(-540, -185)rotate(4, 300, 150)")
