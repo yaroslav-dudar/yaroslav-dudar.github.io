@@ -26,9 +26,7 @@ var width = 960,
 var path = d3.geo.path();
 
 var svg = d3.select("body").append("svg")
-    .attr("preserveAspectRatio", "xMidYMid slice")
     .attr("width", width)
-    .attr('display', 'block')
     .attr("height", height);
 
 d3.json("ill-counties.json", function(error, topology) {
@@ -41,6 +39,7 @@ d3.json("ill-counties.json", function(error, topology) {
 });
 svg
   .attr("transform", "scale(4.2) translate(-500, -190) rotate(4, 300, 150)")
+  .attr("-webkit-transform", "scale(4.2) translate(-500, -190) rotate(4, 300, 150)")
 </script>
 </body>
 </html>
