@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta charset="utf-8">
+<style>
+
+path {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: .2px;
+}
+
+path:hover {
+  fill: red;
+}
+
+</style>
+</head><body>
+<script src="assets/global/scripts/d3.min.js" type="text/javascript"></script>
+<script src="assets/global/scripts/topojson.min.js" type="text/javascript"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var path = d3.geo.path();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("us.json", function(error, topology) {
+  if (error) throw error;
+
+  svg.selectAll("path")
+      .data(topojson.feature(topology, topology.objects.counties).features)
+    .enter().append("path")
+      .attr("d", path);
+});
+//svg
+//    .attr("transform", "scale(4.2)translate(-100, -190)rotate(3, 300, 150)")
+</script>
+</body>
+</html>
