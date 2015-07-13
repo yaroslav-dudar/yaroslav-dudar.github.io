@@ -14,7 +14,8 @@ path:hover {
 }
 svg { max-height: 100%; }
 </style>
-</head><body>
+</head>
+<body style='max-width: 100%;'>
 <script src="assets/global/scripts/d3.min.js" type="text/javascript"></script>
 <script src="assets/global/scripts/topojson.min.js" type="text/javascript"></script>
 <script>
@@ -26,8 +27,9 @@ var path = d3.geo.path();
 
 var svg = d3.select("body").append("svg")
     .attr("preserveAspectRatio", "xMidYMid slice")
-    .attr("width", "100%")
-    .attr("height", "100%");
+    .attr("width", width)
+    .attr('display', 'block')
+    .attr("height", height);
 
 d3.json("ill-counties.json", function(error, topology) {
   if (error) throw error;
