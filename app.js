@@ -188,21 +188,25 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
     }
 });
 
+var projection = d3.geo.mercator().translate([5000, 2600]).scale(3100);
 
-var path = d3.geo.path();
+var path = d3.geo.path()
+    .projection(projection);
 
 var svg2 = d3.select("#illinois-map").append("svg")
-    .attr("width", 960)
-    .attr("height", 500);
+    .attr("viewBox", "0 0 960 500")
+    .attr("preserveAspectRatio", "xMidYMid");
 
 d3.json("ill-counties.json", function(error, topology) {
-  if (error) throw error;
+    if (error) throw error;
 
-  svg2.selectAll("path")
-      .data(topojson.feature(topology, topology.objects.counties).features)
-    .enter().append("path")
-      .attr("id", "counties")
-      .attr("d", path);
+    svg2.selectAll("path")
+        .data(topojson.feature(topology, topology.objects.counties).features)
+        .enter().append("path")
+        .attr("class", function (d) {
+            rand = Math.floor(Math.random() * 6);
+            return "counties q" + rand;
+        })
+        .attr("d", path);
+
 });
-svg2
-    .attr("transform", "scale(4)translate(-505, -175)rotate(4, 400, 0)")
