@@ -1,4 +1,5 @@
 // CFC Location
+/*
 $('map_usa').empty();
 d3.csv("Entity_CFCs.csv", function(data) {
     var map = new Datamap({
@@ -55,7 +56,7 @@ d3.csv("Entity_CFCs.csv", function(data) {
         }
     });
 });
-
+*/
 // CFC history
 var providers = {'24': '24 - ARCHWAY, INC', '25': '25 - OPTIONS & ADVOCACY FOR MCHENRY COUNTY', '20': '20 - ARC COMMUNITY SUPPORT SYSTEMS', '21': '21 - SPECIAL CHILDREN, INC', '22': '22 - ROE #13', '23': '23 - WABASH & OHIO VALLEY SPECIAL ED DISTRICT', '1': '01 - ACCESS SERVCIES OF NORTHEN ILLINOIS', '3': '03 - ROE FOR CARROLL, JO DAVIESS, & STEPHENSON CO', '2': '02 - LAKE COUNTY HEALTH DEPARTMENT', '5': '05 - PACT, INC.', '4': '04 - DAYONE NETWORK', '7': '07 - SUBURBAN ACCESS, INC', '6': '06 - CLEARBROOK CENTER', '9': '09 - HEKTOEN INSTITUTE FOR MEDICAL RESEARCH', '8': '08 - EASTER SEALS SOCIETY OF METO CHICAGO', '13': '13 - EDUCATION SERVICE REGION #26', '11': '11 - RUSH UNIVERSITY MEDICAL CENTER', '10': "10 - LARABIDA CHILDREN'S HOSPITAL", 'Entity_ID': 'Name', '12': '12 - EASTER SEALS SOCIETY OF METRO CHICAGO', '15': '15 - SERVICES OF WILL, GRUNDY, & KANKAKEE COUNTIES', '14': '14 - PEORIA COUNTY BOARD FOR THE CARE AND TREATMENT OF PERSO', '17': '17 - ROE OF ADAMS/PIKE COUNTIES', '16': '16 - CROSSPOINT HUMAN SERVICES', '19': '19 - MACON COUNTY COMMUNITY MENTAL HEALTH BOARD', '18': '18 - SANGAMON COUNTY HEALTH DEPARTMENT'}
 
@@ -170,21 +171,23 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
     };
 
     function mouseover(d) {
-            tooltip.style("visibility", "visible");
-            var full_data_name = d3.time.format("%B %Y")
-            var purchase_text = full_data_name(format.parse(d[0])) + "<br>Casenote count: " + d[1].length;
-            tooltip.transition()        
-                        .duration(200)      
-                        .style("opacity", .9);      
-            tooltip.html(purchase_text)  
-                        .style("left", (d3.event.pageX) + 30 + "px")     
-                        .style("top", (d3.event.pageY) + "px"); 
-        }
+        tooltip.style("visibility", "visible");
+        var full_data_name = d3.time.format("%B %Y")
+        var purchase_text = full_data_name(format.parse(d[0])) + "<br>Casenote count: " + d[1].length;
+        tooltip.transition()        
+            .duration(200)      
+            .style("opacity", .9);     
+        tooltip.html(purchase_text)  
+            .style("left", (d3.event.pageX) + 30 + "px")
+            .style("z-index", 100000)
+            .style("top", (d3.event.pageY) + "px");
+    }
 
     function mouseout (d) {
         tooltip.transition()        
           .duration(500)      
-          .style("opacity", 0);
+          .style("opacity", 0)
+          .style("z-index", -1)
     }
 });
 
@@ -193,20 +196,61 @@ var projection = d3.geo.mercator().translate([5000, 2600]).scale(3100);
 var path = d3.geo.path()
     .projection(projection);
 
-var svg2 = d3.select("#illinois-map").append("svg")
+var illinois_map = d3.select("#illinois-map").append("svg")
     .attr("viewBox", "0 0 960 500")
     .attr("preserveAspectRatio", "xMidYMid");
 
 d3.json("ill-counties.json", function(error, topology) {
     if (error) throw error;
 
-    svg2.selectAll("path")
+    illinois_map.selectAll("path")
         .data(topojson.feature(topology, topology.objects.counties).features)
         .enter().append("path")
         .attr("class", function (d) {
-            rand = Math.floor(Math.random() * 6);
+            rand = 10;//Math.floor(Math.random() * 6);
             return "counties q" + rand;
         })
         .attr("d", path);
 
+
+    d3.csv("Entity_CFCs.csv", function(CFCs) {
+        var points = []
+        for (var i=0; i < CFCs.length - 1; i++) {
+            points.push({
+                name: CFCs[i].Name, latitude: CFCs[i].Lat,
+                longitude: CFCs[i].Lng, reviewer: CFCs[i].Reviewer,
+                city: CFCs[i].City, address: CFCs[i].Address1,
+            });
+        }
+        illinois_map.selectAll(".pin")
+            .data(points)
+            .enter().append("circle", ".pin")
+            .attr("r", 3)
+            .attr("class","site")
+            .on("mouseover", mouseover)
+            .on("mouseout", mouseout)
+            .attr("transform", function(d) {
+                return "translate(" + projection([d.longitude, d.latitude]) + ")";
+            });
+
+        function mouseover(d) {
+            tooltip.style("visibility", "visible");
+            var text = "<strong><table class='table'><tr><td>Name:</td><td>" +
+                d.name + "</td></tr><tr><td>City:</td><td>" + d.city +
+                "</td></tr><tr><td>Reviewer:</td><td>" + d.reviewer + "</td></tr></table></strong>";
+            tooltip.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            tooltip.html(text)  
+                .style("left", (d3.event.pageX) + 30 + "px")
+                .style("z-index", 100000)   
+                .style("top", (d3.event.pageY) + "px"); 
+        }
+        function mouseout (d) {
+            tooltip.transition()        
+              .duration(500)      
+              .style("opacity", 0)
+              .style("z-index", -1);
+        }
+    });
 });

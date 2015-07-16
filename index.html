@@ -60,14 +60,39 @@ License: You must have a valid license purchased only from themeforest(the above
 	  padding: 10px;
 	}
 
+	#tooltip .table th, .table td {
+	    border-top: none !important;
+	    border-left: none !important;
+	}
+	#tooltip .fixed-table-container {
+	    border:0px;
+	}
+	#tooltip .table th {
+	    border-bottom: none !important;
+	}
+	#tooltip .table:last-child {
+	  border:none !important;
+	}
+
 	path.counties {
-      stroke: #000000;
-      stroke-width: .4px;
+      stroke: rgb(222,235,247);
+      stroke-width: 1px;
     }
 
     path.counties:hover {
         opacity: 0.2;
     }
+
+    .site {
+    	fill: #000066;
+    	stroke: rgb(198,219,239);
+      	stroke-width: 2px;
+    }
+
+    .site:hover {
+    	opacity: 0.5;
+    }
+
     .q0{fill:rgb(222,235,247)}
 	.q1{fill:rgb(158,202,225)}
 	.q2{fill:rgb(49,130,189)}
@@ -526,30 +551,20 @@ License: You must have a valid license purchased only from themeforest(the above
 				</div>
 				<div class="row">
 					<div class="col-md-12 col-sm-12">
-						<!-- BEGIN REGIONAL STATS PORTLET-->
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
 									<i class="icon-share font-red-sunglo"></i>
-									<span class="caption-subject font-red-sunglo bold uppercase">CFC Location</span>
-								</div>
-								<div class="actions">
-									<a class="btn btn-circle btn-icon-only btn-default fullscreen" href="javascript:;">
-									</a>
+									<span class="caption-subject font-red-sunglo bold uppercase">Illinois</span>
 								</div>
 							</div>
 							<div class="portlet-body">
-								<div id="region_statistics_loading">
-									<img src="assets/admin/layout2/img/loading.gif" alt="loading"/>
-								</div>
 								<!-- REGIONAL STATS -->
-								<div id="region_statistics_content" class="display-none">
-									<div id="map_usa" style='border: 1px solid;'>
-									</div>
+								<div id="region_statistics_content">
+									<div id="illinois-map"></div>
 								</div>
 							</div>
 						</div>
-						<!-- END REGIONAL STATS PORTLET-->
 					</div>
 				</div>
 				<div class="clearfix">
@@ -571,26 +586,6 @@ License: You must have a valid license purchased only from themeforest(the above
 								<!-- REGIONAL STATS -->
 								<div id="region_statistics_content">
 									<div id="cfc_history"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="clearfix">
-				</div>
-				<div class="row">
-					<div class="col-md-12 col-sm-12">
-						<div class="portlet light ">
-							<div class="portlet-title">
-								<div class="caption">
-									<i class="icon-share font-red-sunglo"></i>
-									<span class="caption-subject font-red-sunglo bold uppercase">Illinois</span>
-								</div>
-							</div>
-							<div class="portlet-body">
-								<!-- REGIONAL STATS -->
-								<div id="region_statistics_content">
-									<div id="illinois-map"></div>
 								</div>
 							</div>
 						</div>
