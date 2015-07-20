@@ -1,62 +1,3 @@
-// CFC Location
-/*
-$('map_usa').empty();
-d3.csv("Entity_CFCs.csv", function(data) {
-    var map = new Datamap({
-        element: document.getElementById('map_usa'),
-        projection: 'mercator',
-        scope: 'usa',
-        responsive: true,
-        geographyConfig: {
-            borderColor: '#000000',
-            highlightFillColor: '#989898',
-            highlightBorderColor: '#000000',
-        },
-        bubblesConfig: {
-            borderColor: '#000000',
-            highlightBorderColor: '#000000',
-            highlightFillColor: '#003300',
-        },
-        fills: {
-            defaultFill: "#F8F8F8",
-            marker: '#006633',
-        },
-        
-        setProjection: function(element) {
-            var projection = d3.geo.equirectangular()
-              .center([-113, 33.5])
-              .rotate([0, 30])
-              .scale(2000)
-              .translate([700 / 2, 500 / 2]);
-            var path = d3.geo.path()
-              .projection(projection);
-            
-            return {path: path, projection: projection};
-        },
-
-
-    });
-
-    d3.select(window).on('resize', function() {
-        map.resize();
-    });
-
-    var bubbles = []
-    for (var i=0; i < data.length - 1; i++) {
-        bubbles.push({
-            name: data[i].Name, latitude: data[i].Lat,
-            longitude: data[i].Lng, radius: 3, reviewer: data[i].Reviewer,
-            city: data[i].City, address: data[i].Address1, fillKey: 'marker',
-        });
-    }
-    map.bubbles(bubbles, {
-        popupTemplate: function(geo, data) {
-            return "<div class='hoverinfo' style='font-size: 10px;'><p>Name: " + 
-                data.name + "</p><p>Address: " + data.address + ', ' + data.city +  "</p></div>";
-        }
-    });
-});
-*/
 // CFC history
 var providers = {'24': '24 - ARCHWAY, INC', '25': '25 - OPTIONS & ADVOCACY FOR MCHENRY COUNTY', '20': '20 - ARC COMMUNITY SUPPORT SYSTEMS', '21': '21 - SPECIAL CHILDREN, INC', '22': '22 - ROE #13', '23': '23 - WABASH & OHIO VALLEY SPECIAL ED DISTRICT', '1': '01 - ACCESS SERVCIES OF NORTHEN ILLINOIS', '3': '03 - ROE FOR CARROLL, JO DAVIESS, & STEPHENSON CO', '2': '02 - LAKE COUNTY HEALTH DEPARTMENT', '5': '05 - PACT, INC.', '4': '04 - DAYONE NETWORK', '7': '07 - SUBURBAN ACCESS, INC', '6': '06 - CLEARBROOK CENTER', '9': '09 - HEKTOEN INSTITUTE FOR MEDICAL RESEARCH', '8': '08 - EASTER SEALS SOCIETY OF METO CHICAGO', '13': '13 - EDUCATION SERVICE REGION #26', '11': '11 - RUSH UNIVERSITY MEDICAL CENTER', '10': "10 - LARABIDA CHILDREN'S HOSPITAL", 'Entity_ID': 'Name', '12': '12 - EASTER SEALS SOCIETY OF METRO CHICAGO', '15': '15 - SERVICES OF WILL, GRUNDY, & KANKAKEE COUNTIES', '14': '14 - PEORIA COUNTY BOARD FOR THE CARE AND TREATMENT OF PERSO', '17': '17 - ROE OF ADAMS/PIKE COUNTIES', '16': '16 - CROSSPOINT HUMAN SERVICES', '19': '19 - MACON COUNTY COMMUNITY MENTAL HEALTH BOARD', '18': '18 - SANGAMON COUNTY HEALTH DEPARTMENT'}
 
@@ -191,6 +132,7 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
     }
 });
 
+// ILLINIOS MAP
 var projection = d3.geo.mercator().translate([5000, 2600]).scale(3100);
 
 var path = d3.geo.path()
@@ -200,18 +142,68 @@ var illinois_map = d3.select("#illinois-map").append("svg")
     .attr("viewBox", "0 0 960 500")
     .attr("preserveAspectRatio", "xMidYMid");
 
-d3.json("ill-counties.json", function(error, topology) {
+var color = d3.scale.category20();
+
+var sites_cfc = [
+    {'name': 'Lake County Health Department', 'counties': d3.set([17097])},
+    {'name': 'Regional Office of Education for Carroll, Jo Daviess, & Stephenson Co.', 'counties': d3.set([17015, 17037, 17085, 17103, 17177, 17195])},
+    {'name': 'Access Services of Northern Illinois', 'counties': d3.set([17007, 17011, 17123, 17141, 17155, 17201])},
+    {'name': 'Reg. Office of Education  # 26', 'counties': d3.set([17057, 17067, 17071, 17095, 17109, 17131, 17161, 17169, 17187])},
+    {'name': '3000 W. Rohmann Ave.', 'counties': d3.set([17073, 17143, 17175, 17179, 17203])},
+    {'name': 'Services of Will, Grundy, & Kankakee Counties, Inc.', 'counties': d3.set([17063, 17091, 17099, 17197])},
+    {'name': '103 S. Country Fair Dr.', 'counties': d3.set([17019, 17053, 17075, 17105, 17113, 17183])},
+    {'name': 'ROE of Adams/Pike Counties', 'counties': d3.set([17001, 17009, 17013, 17017, 17061, 17083, 17137, 17149, 17171])},
+    {'name': 'Sangamon Co. Public Health Department', 'counties': d3.set([17107, 17125, 17129, 17167])},
+    {'name': 'Macon County Community Mental Health Board', 'counties': d3.set([17023, 17029, 17035, 17039, 17041, 17045, 17115, 17139, 17147, 17173])},
+    {'name': 'Child & Family Connections', 'counties': d3.set([17005, 17021, 17025, 17033, 17049, 17051, 17079, 17101, 17117, 17135, 17159])},
+    {'name': 'Regional Office of Education #13', 'counties': d3.set([17119, 17133, 17157, 17163])},
+    {'name': 'Regional Office of Education #13', 'counties': d3.set([17027, 17055, 17081, 17121, 17189, 17199])},
+    {'name': 'Wabash & Ohio Valley Special Education Dist.', 'counties': d3.set([17047, 17059, 17065, 17165, 17185, 17191, 17193])},
+    {'name': 'Archway, Inc.', 'counties': d3.set([17003, 17069, 17077, 17087, 17127, 17145, 17151, 17153, 17181])},
+    {'name': 'Options & Advocacy for McHenry Co.', 'counties': d3.set([17111])},
+    {'name': 'DayOne Network', 'counties': d3.set([17089, 17093])},
+]
+
+var sites_cfc_zipcodes = [
+    {'name': 'Fantus Health Center', 'zipcodes': d3.set([60601, 60602, 60603, 60604, 60605, 60606, 60607, 60608, 60612, 60616,60623, 60624, 60632, 60644, 60661])},
+    {'name': 'Clearbrook Center', 'zipcodes': d3.set([60004, 60005, 60006, 60007, 60008, 60010, 60015, 60016, 60018, 60022, 60025, 60026, 60029, 60035, 60043, 60053, 60056, 60062, 60067, 60068, 60070, 60074, 60076, 60077, 60082, 60089, 60090, 60091, 60093, 60095, 60106, 60107, 60120, 60133, 60143, 60149, 60157, 60169, 60172, 60173, 60192, 60193, 60194, 60195, 60196, 60201, 60202, 60203, 60204, 60666, 60712, 60714])},
+    {'name': 'Suburban Access, Inc', 'zipcodes': d3.set([60104, 60130, 60131, 60141, 60153, 60154, 60155, 60160, 60162, 60163, 60164, 60165, 60171, 60176, 60301, 60302, 60303, 60304, 60305, 60402, 60513, 60521, 60525, 60526, 60527, 60534, 60546, 60558, 60706, 60707, 60804])},
+    {'name': 'Easter Seals Society of Metropolitan Chicago.', 'zipcodes': d3.set([60620, 60628, 60629, 60633, 60638, 60643, 60652, 60655, 60805, 60827])},
+    {'name': 'Easter Seals Society of Metropolitan Chicago', 'zipcodes': d3.set([60406, 60409, 60411, 60415, 60417, 60419, 60422, 60423, 60425, 60426, 60428, 60429, 60430, 60439, 60438, 60443, 60445, 60448, 60449, 60452, 60453, 60455, 60456, 60457, 60458, 60459, 60461, 60462, 60463, 60464, 60465, 60466, 60467, 60469, 60471, 60472, 60473, 60475, 60476, 60477, 60478, 60480, 60482, 60487, 60491, 60501, 60803])},
+    {'name': 'La Rabida Children’s Hospital', 'zipcodes': d3.set([60609, 60615, 60617, 60619, 60621, 60636, 60637, 60649, 60653])},
+    {'name': '945 W. George St., Suite 300', 'zipcodes': d3.set([60610, 60611, 60613, 60614, 60618, 60622, 60625, 60626, 60630, 60631, 60634, 60639, 66040, 60641, 60642, 60645, 60646, 60647, 60651, 60654, 60656, 60657, 60659, 60660])},
+    {'name': 'PACT, Inc.', 'zipcodes': d3.set([60103, 60126, 60101, 60105, 60106, 60108, 60116, 60117, 60126, 60128, 60132, 60137, 60138, 60139, 60143, 60148, 60157, 60172, 60181, 60184, 60185, 60186, 60187, 60188, 60189, 60190, 60191, 60197, 60199, 60439, 60504, 60514, 60515, 60516, 60517, 60519, 60521, 60522, 60523, 60527, 60532, 60540, 60555, 60559, 60561, 60563, 60565, 60566, 60567, 60572, 60598, 60599])},
+]
+
+d3.json("il-counties.json", function(error, il) {
     if (error) throw error;
 
-    illinois_map.selectAll("path")
-        .data(topojson.feature(topology, topology.objects.counties).features)
-        .enter().append("path")
-        .attr("class", function (d) {
-            rand = 10;//Math.floor(Math.random() * 6);
-            return "counties q" + rand;
-        })
-        .attr("d", path);
+    illinois_map.append("path")
+      .datum(topojson.feature(il, il.objects.counties))
+      .attr("class", "state")
+      .attr("d", path);
 
+    for (var i_=0; i_ < sites_cfc.length; i_++) {
+        illinois_map.append("path") 
+            .datum(topojson.merge(il, il.objects.counties.geometries.filter(function(d) {
+                return sites_cfc[i_]['counties'].has(d.id);
+            })))
+            .attr("class", "state selected")
+            .style("fill", function(d,i){return color(i_);})
+            .attr("d", path);
+    }
+    
+    d3.json("il-zipcodes.json", function(error, il_zipcodes) {
+        for (var i_=0; i_ < sites_cfc_zipcodes.length; i_++) {
+            illinois_map.append("path") 
+                .datum(topojson.merge(il_zipcodes, il_zipcodes.objects.zipcodes.geometries.filter(function(d) {
+                    return sites_cfc_zipcodes[i_]['zipcodes'].has(d.id);
+                })))
+                .attr("class", "state selected")
+                .style("fill", function(d,i){return color(i_);})
+                .attr("d", path);
+        }
+    });
 
     d3.csv("Entity_CFCs.csv", function(CFCs) {
         var points = []
@@ -225,12 +217,12 @@ d3.json("ill-counties.json", function(error, topology) {
         illinois_map.selectAll(".pin")
             .data(points)
             .enter().append("circle", ".pin")
-            .attr("r", 3)
+            .attr("r", 2)
             .attr("class","site")
             .on("mouseover", mouseover)
             .on("mouseout", mouseout)
             .attr("transform", function(d) {
-                return "translate(" + projection([d.longitude, d.latitude]) + ")";
+               return "translate(" + projection([d.longitude, d.latitude]) + ")";
             });
 
         function mouseover(d) {
