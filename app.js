@@ -195,7 +195,7 @@ d3.json("il-counties.json", function(error, il) {
     
     d3.json("il-zipcodes.json", function(error, il_zipcodes) {
         for (var i_=0; i_ < sites_cfc_zipcodes.length; i_++) {
-            illinois_map.append("path") 
+            illinois_map.append("path")
                 .datum(topojson.merge(il_zipcodes, il_zipcodes.objects.zipcodes.geometries.filter(function(d) {
                     return sites_cfc_zipcodes[i_]['zipcodes'].has(d.id);
                 })))
@@ -203,46 +203,46 @@ d3.json("il-counties.json", function(error, il) {
                 .style("fill", function(d,i){return color(i_);})
                 .attr("d", path);
         }
-    });
 
-    d3.csv("Entity_CFCs.csv", function(CFCs) {
-        var points = []
-        for (var i=0; i < CFCs.length - 1; i++) {
-            points.push({
-                name: CFCs[i].Name, latitude: CFCs[i].Lat,
-                longitude: CFCs[i].Lng, reviewer: CFCs[i].Reviewer,
-                city: CFCs[i].City, address: CFCs[i].Address1,
-            });
-        }
-        illinois_map.selectAll(".pin")
-            .data(points)
-            .enter().append("circle", ".pin")
-            .attr("r", 2)
-            .attr("class","site")
-            .on("mouseover", mouseover)
-            .on("mouseout", mouseout)
-            .attr("transform", function(d) {
-               return "translate(" + projection([d.longitude, d.latitude]) + ")";
-            });
+        d3.csv("Entity_CFCs.csv", function(CFCs) {
+            var points = []
+            for (var i=0; i < CFCs.length - 1; i++) {
+                points.push({
+                    name: CFCs[i].Name, latitude: CFCs[i].Lat,
+                    longitude: CFCs[i].Lng, reviewer: CFCs[i].Reviewer,
+                    city: CFCs[i].City, address: CFCs[i].Address1,
+                });
+            }
+            illinois_map.selectAll(".pin")
+                .data(points)
+                .enter().append("circle", ".pin")
+                .attr("r", 2)
+                .attr("class","site")
+                .on("mouseover", mouseover)
+                .on("mouseout", mouseout)
+                .attr("transform", function(d) {
+                   return "translate(" + projection([d.longitude, d.latitude]) + ")";
+                });
 
-        function mouseover(d) {
-            tooltip.style("visibility", "visible");
-            var text = "<strong><table class='table'><tr><td>Name:</td><td>" +
-                d.name + "</td></tr><tr><td>City:</td><td>" + d.city +
-                "</td></tr><tr><td>Reviewer:</td><td>" + d.reviewer + "</td></tr></table></strong>";
-            tooltip.transition()        
-                .duration(200)      
-                .style("opacity", .9);      
-            tooltip.html(text)  
-                .style("left", (d3.event.pageX) + 30 + "px")
-                .style("z-index", 100000)   
-                .style("top", (d3.event.pageY) + "px"); 
-        }
-        function mouseout (d) {
-            tooltip.transition()        
-              .duration(500)      
-              .style("opacity", 0)
-              .style("z-index", -1);
-        }
+            function mouseover(d) {
+                tooltip.style("visibility", "visible");
+                var text = "<strong><table class='table'><tr><td>Name:</td><td>" +
+                    d.name + "</td></tr><tr><td>City:</td><td>" + d.city +
+                    "</td></tr><tr><td>Reviewer:</td><td>" + d.reviewer + "</td></tr></table></strong>";
+                tooltip.transition()        
+                    .duration(200)      
+                    .style("opacity", .9);      
+                tooltip.html(text)  
+                    .style("left", (d3.event.pageX) + 30 + "px")
+                    .style("z-index", 100000)   
+                    .style("top", (d3.event.pageY) + "px"); 
+            }
+            function mouseout (d) {
+                tooltip.transition()        
+                  .duration(500)      
+                  .style("opacity", 0)
+                  .style("z-index", -1);
+            }
+        });
     });
 });
