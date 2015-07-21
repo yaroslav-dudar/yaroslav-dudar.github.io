@@ -142,7 +142,10 @@ var illinois_map = d3.select("#illinois-map").append("svg")
     .attr("viewBox", "0 0 960 500")
     .attr("preserveAspectRatio", "xMidYMid");
 
-var color = d3.scale.category20();
+var color = ['#446CB3', '#E4F1FE', '#4183D7', '#336E7B', '#22313F', '#3A539B', '#89C4F4', '#4B77BE',
+            '#59ABE3', '#81CFE0', '#52B3D9', '#19B5FE', '#6BB9F0', '#34495E', '#2574A9', '#5C97BF',
+            '#C5EFF7', '#22A7F0', '#3498DB', '#2C3E50', '#1E8BC3', '#67809F', '#1F3A93'
+]
 
 var sites_cfc = [
     {'name': 'Lake County Health Department', 'counties': d3.set([17097])},
@@ -189,7 +192,7 @@ d3.json("il-counties.json", function(error, il) {
                 return sites_cfc[i_]['counties'].has(d.id);
             })))
             .attr("class", "state selected")
-            .style("fill", function(d,i){return color(i_);})
+            .style("fill", function(d){return rand_color();})
             .attr("d", path);
     }
     
@@ -200,7 +203,7 @@ d3.json("il-counties.json", function(error, il) {
                     return sites_cfc_zipcodes[i_]['zipcodes'].has(d.id);
                 })))
                 .attr("class", "state selected")
-                .style("fill", function(d,i){return color(i_);})
+                .style("fill", function(d){return rand_color();})
                 .attr("d", path);
         }
 
@@ -246,3 +249,7 @@ d3.json("il-counties.json", function(error, il) {
         });
     });
 });
+
+function rand_color() {
+    return color[Math.floor(Math.random() * 23)];
+}
