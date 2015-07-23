@@ -133,14 +133,15 @@ d3.csv("CaseNoteCFC.csv", function(csv) {
 });
 
 // ILLINIOS MAP
-var projection = d3.geo.mercator().translate([5000, 2600]).scale(3100);
-
-var path = d3.geo.path()
-    .projection(projection);
+var projection = d3.geo.mercator().center([-89, 40]).scale(3500);
 
 var illinois_map = d3.select("#illinois-map").append("svg")
     .attr("viewBox", "0 0 960 500")
-    .attr("preserveAspectRatio", "xMidYMid");
+    .attr("preserveAspectRatio", "xMidYMid")
+    .call(d3.behavior.zoom().scaleExtent([1,5]).on("zoom", function () {
+        illinois_map.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+    }))
+    .append('g');
 
 var color = ['#446CB3', '#E4F1FE', '#4183D7', '#336E7B', '#22313F', '#3A539B', '#89C4F4', '#4B77BE',
             '#59ABE3', '#81CFE0', '#52B3D9', '#19B5FE', '#6BB9F0', '#34495E', '#2574A9', '#5C97BF',
@@ -177,6 +178,9 @@ var sites_cfc_zipcodes = [
     {'name': '945 W. George St., Suite 300', 'zipcodes': d3.set([60610, 60611, 60613, 60614, 60618, 60622, 60625, 60626, 60630, 60631, 60634, 60639, 66040, 60641, 60642, 60645, 60646, 60647, 60651, 60654, 60656, 60657, 60659, 60660])},
     {'name': 'PACT, Inc.', 'zipcodes': d3.set([60103, 60126, 60101, 60105, 60106, 60108, 60116, 60117, 60126, 60128, 60132, 60137, 60138, 60139, 60143, 60148, 60157, 60172, 60181, 60184, 60185, 60186, 60187, 60188, 60189, 60190, 60191, 60197, 60199, 60439, 60504, 60514, 60515, 60516, 60517, 60519, 60521, 60522, 60523, 60527, 60532, 60540, 60555, 60559, 60561, 60563, 60565, 60566, 60567, 60572, 60598, 60599])},
 ]
+
+var path = d3.geo.path()
+    .projection(projection);
 
 d3.json("il-counties.json", function(error, il) {
     if (error) throw error;
