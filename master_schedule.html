@@ -53,45 +53,6 @@ License: You must have a valid license purchased only from themeforest(the above
 	body{font-family: Arial, sans-serif;font-size:10px;}
 	.axis path,.axis line {fill: none;stroke:#b6b6b6;shape-rendering: crispEdges;}
 	.tick text{fill:#999;}
-
-	#tooltip {
-	  background-color: #fff;
-	  border: 2px solid #ccc;
-	  padding: 10px;
-	}
-
-	#tooltip .table th, .table td {
-	    border-top: none !important;
-	    border-left: none !important;
-	}
-	#tooltip .fixed-table-container {
-	    border:0px;
-	}
-	#tooltip .table th {
-	    border-bottom: none !important;
-	}
-	#tooltip .table:last-child {
-	  border:none !important;
-	}
-
-    .site {
-    	fill: #000066;
-    	stroke: rgb(198,219,239);
-      	stroke-width: 0.5px;
-    }
-
-    .site:hover {
-    	opacity: 0.5;
-    }
-
-	.state {
-	  fill: none;
-	}
-
-	.state.selected {
-	  stroke: #000;
-	  stroke-width: 1px;
-	}
 </style>
 </head>
 <!-- END HEAD -->
@@ -266,18 +227,18 @@ License: You must have a valid license purchased only from themeforest(the above
 				<!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
 				<!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
 				<ul class="page-sidebar-menu page-sidebar-menu-hover-submenu " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200">
-					<li class="start active ">
+					<li>
 						<a href="index.html">
 						<i class="icon-home"></i>
 						<span class="title">Home</span>
-						<span class="selected"></span>
+						<span class="arrow "></span>
 						</a>
 					</li>
-					<li>
+					<li class="start active ">
 						<a href="master_schedule.html">
 						<i class="icon-bar-chart"></i>
 						<span class="title">Master Schedule</span>
-						<span class="arrow "></span>
+						<span class="selected"></span>
 						</a>
 					</li>
 					<li>
@@ -525,37 +486,18 @@ License: You must have a valid license purchased only from themeforest(the above
 							<div class="portlet-title">
 								<div class="caption">
 									<i class="icon-share font-red-sunglo"></i>
-									<span class="caption-subject font-red-sunglo bold uppercase">Illinois</span>
+									<span class="caption-subject font-red-sunglo bold uppercase">Master Schedule</span>
 								</div>
 							</div>
 							<div class="portlet-body">
 								<!-- REGIONAL STATS -->
 								<div id="region_statistics_content">
-									<div id="illinois-map"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="clearfix">
-				</div>
-				<div class="row">
-					<div class="col-md-12 col-sm-12">
-						<div class="portlet light ">
-							<div class="portlet-title">
-								<div class="caption">
-									<i class="icon-share font-red-sunglo"></i>
-									<span class="caption-subject font-red-sunglo bold uppercase">CFC History</span>
-								</div>
-								<div class="actions">
-									<a class="btn btn-circle btn-icon-only btn-default fullscreen" href="javascript:;">
-									</a>
-								</div>
-							</div>
-							<div class="portlet-body">
-								<!-- REGIONAL STATS -->
-								<div id="region_statistics_content">
-									<div id="cfc_history"></div>
+									<div style='margin-left: 10px;'>
+								        <button id="back" name="back" ><</button>
+								        <button id="forward" name="forward" >></button>
+								        <label id="currentMonth">May 2013</label>
+							    	</div>
+									<div id="m-schedule"></div>
 								</div>
 							</div>
 						</div>
@@ -628,7 +570,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="assets/global/scripts/d3.min.js" type="text/javascript"></script>
 <script src="assets/global/scripts/topojson.min.js" type="text/javascript"></script>
 <script src="assets/global/scripts/datamaps.all.min.js" type="text/javascript"></script>
-<script src="app.js" type="text/javascript"></script>
+<script src="callendar.js" type="text/javascript"></script>
 <!-- END D3.JS -->
 <script>
 jQuery(document).ready(function() {    
