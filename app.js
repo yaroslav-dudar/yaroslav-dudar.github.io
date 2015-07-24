@@ -215,8 +215,8 @@ d3.json("il-counties.json", function(error, il) {
             var points = []
             for (var i=0; i < CFCs.length - 1; i++) {
                 points.push({
-                    name: CFCs[i].Name, latitude: CFCs[i].Lat,
-                    longitude: CFCs[i].Lng, reviewer: CFCs[i].Reviewer,
+                    name: CFCs[i].Name, latitude: CFCs[i].latitude,
+                    longitude: CFCs[i].longitude, reviewer: CFCs[i].Reviewer,
                     city: CFCs[i].City, address: CFCs[i].Address1,
                 });
             }
