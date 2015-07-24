@@ -218,14 +218,19 @@ function drawGraphsForMonthlyData() {
         });
 
     arcs.append("text")
+        .filter(function(d){
+            if (d[0].value > 0) {
+                return true;
+            }
+        })
         .attr("transform", function (d,i) {
             // Standard functions for drawing a pie charts in D3.
             return "translate(" + arc.centroid(d[0]) + ")";
         })
-    .attr("text-anchor", "middle")
-    .text(function(d,i) {
-        return d[0].value;
-        });
+        .attr("text-anchor", "middle")
+        .text(function(d,i) {
+            return d[0].value;
+            });
 
 }
 
@@ -250,6 +255,8 @@ function renderCalendarGrid(month, year) {
                  .attr("preserveAspectRatio", "xMidYMid")
                  .append("g");
 
+    // draw legend
+    renderLegend();
     // Cell positions are generated and stored globally because they are used by other functions as a reference to render different things.
     var cellPositions = d3CalendarGlobals.gridCellPositions;
 
@@ -300,4 +307,54 @@ function renderCalendarGrid(month, year) {
     d3CalendarGlobals.chartsGroup = d3CalendarGlobals.calendar.append("svg:g");
     // Call the function to draw the charts in the cells. This will be called again each time the user presses the forward or backward buttons.
     drawGraphsForMonthlyData();
+}
+
+// ADD LEGEND
+function renderLegend() {
+    var w = 500;
+    var legend = d3.select("#m-schedule")
+        .append("svg")
+        .attr("class", "legend")
+        //.attr("width", w + "px")
+        //.attr("height", "30px")
+        .attr("viewBox", "0 0 960 30")
+        .attr("preserveAspectRatio", "xMidYMid")
+        .append("g");
+
+    var legend_data = [
+        ['Not started', '#3182bd'],
+        ['In progress', '#6baed6'],
+        ['On hold', '#9ecae1']
+    ]
+
+    var legendRect = legend.selectAll('rect').data(legend_data);
+
+    legendRect.enter()
+        .append("rect")
+        .attr("x", function(d,i) {
+            return i * 100 + 10;
+        })
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+        .attr('ry', '3')
+        .attr('rx', '3')
+        .attr("width", 20)
+        .attr("height", 20);
+
+    legendRect
+        .style("fill", function(d) {
+            return d[1];
+        });
+
+    var legendText = legend.selectAll('text').data(legend_data);
+    legendText
+        .enter()
+        .append('text')
+        .attr("x", function(d,i) {
+            return i * 100 + 40;
+        })
+        .attr("y", '15px')
+        .text(function(d) {
+            return d[0];
+        });
 }
